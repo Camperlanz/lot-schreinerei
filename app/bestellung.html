@@ -460,8 +460,9 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       <div class="panel-head">Ohne Scanner erfassen</div>
       <div class="panel-body">
         <div class="handline">
-          <input id="codeInput" type="text" inputmode="text" autocapitalize="characters"
-                 autocorrect="off" spellcheck="false"
+          <input id="codeInput" name="artikelnummer" type="text" inputmode="text"
+                 autocapitalize="characters" autocorrect="off" spellcheck="false"
+                 autocomplete="off" data-1p-ignore data-lpignore="true" data-form-type="other"
                  aria-label="Artikelnummer von Hand eingeben">
           <button class="b b-primary" id="codeGo" type="button">Übernehmen</button>
         </div>
