@@ -2,15 +2,15 @@
 <html lang="de">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lot — Lieferanten</title>
+<title>Lot — Artikel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 
 <style>
 /* =========================================================================
-   Lot — Lieferanten erfassen
-   Tokens identisch zu design/tokens.css (inline, damit die Seite allein laeuft)
+   Lot — Artikel erfassen
+   Tokens identisch zu design/tokens.css (inline, damit die Seite allein läuft)
    ========================================================================= */
 :root{
   --raw-o-50:#FFF4ED; --raw-o-100:#FFE4D3; --raw-o-200:#FFC5A3; --raw-o-300:#FFA96F;
@@ -20,11 +20,9 @@
   --raw-n-200:#E4DCD4; --raw-n-300:#CDC3B9; --raw-n-400:#A79C91; --raw-n-500:#7E746A;
   --raw-n-600:#5C554E; --raw-n-700:#423C36; --raw-n-800:#26211D; --raw-n-900:#171310;
   --raw-n-950:#100D0B;
-  --raw-p-400:#4EB3B8; --raw-p-700:#0E5257; --raw-p-50:#E9F4F4;
   --raw-ok-500:#1F7A4D; --raw-ok-400:#4FBF87; --raw-ok-50:#E7F4EC;
   --raw-warn-700:#8A5A00; --raw-warn-400:#F5B301; --raw-warn-50:#FDF3DC;
   --raw-err-600:#B3261E; --raw-err-400:#FF6B60; --raw-err-50:#FCEAE8;
-  --raw-info-600:#1A5F9E; --raw-info-400:#5FAEE8; --raw-info-50:#E8F1FA;
 }
 :root{
   color-scheme:light;
@@ -40,9 +38,7 @@
   --ok-text:var(--raw-ok-500); --ok-bg:var(--raw-ok-50); --ok-bd:#A8D8BC;
   --warn-text:var(--raw-warn-700); --warn-bg:var(--raw-warn-50); --warn-bd:#E8C777;
   --err-text:var(--raw-err-600); --err-bg:var(--raw-err-50); --err-bd:#EFA9A3;
-  --info-text:var(--raw-info-600); --info-bg:var(--raw-info-50); --info-bd:#A9C9E6;
   --shadow-1:0 1px 2px rgba(35,25,18,.07),0 1px 1px rgba(35,25,18,.04);
-  --shadow-2:0 2px 6px rgba(35,25,18,.09),0 8px 20px rgba(35,25,18,.06);
   --r-sm:4px; --r-md:8px; --r-lg:12px; --r-pill:999px;
   --touch-min:44px; --touch-comfort:56px;
   --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
@@ -66,9 +62,7 @@
     --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
     --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
     --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
-    --info-text:var(--raw-info-400); --info-bg:#0D2135; --info-bd:#22496E;
     --shadow-1:0 1px 2px rgba(0,0,0,.5);
-    --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
     --topbar-bg:#0B0908; --topbar-line:#241F1B;
   }
 }
@@ -86,9 +80,7 @@
   --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
   --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
   --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
-  --info-text:var(--raw-info-400); --info-bg:#0D2135; --info-bd:#22496E;
   --shadow-1:0 1px 2px rgba(0,0,0,.5);
-  --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
   --topbar-bg:#0B0908; --topbar-line:#241F1B;
 }
 
@@ -123,7 +115,7 @@ body{
 .ghost .dot{width:9px; height:9px; border-radius:50%; background:var(--brand)}
 
 /* Layout */
-.page{max-width:1000px; margin:0 auto; padding:24px 20px 72px}
+.page{max-width:1080px; margin:0 auto; padding:24px 20px 72px}
 .head{display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap; margin-bottom:18px}
 .head h2{margin:0; font:600 21px/1.2 var(--f-display); color:var(--text-strong); letter-spacing:-.01em}
 .head .right{margin-left:auto; display:flex; gap:10px; flex-wrap:wrap}
@@ -138,10 +130,14 @@ body{
   font:600 11px/1 var(--f-mono); letter-spacing:.1em; text-transform:uppercase;
   color:var(--text-muted);
 }
+.panel-head .free{
+  margin-left:auto; font:400 12px/1 var(--f-mono); letter-spacing:0;
+  text-transform:none; color:var(--text-faint);
+}
 .panel-body{padding:16px; display:flex; flex-direction:column; gap:16px}
 
 /* Formular */
-.rows{display:grid; grid-template-columns:repeat(auto-fit,minmax(232px,1fr)); gap:14px}
+.rows{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px}
 .field{display:flex; flex-direction:column; gap:7px}
 .field.wide{grid-column:1/-1}
 .field label{
@@ -149,16 +145,25 @@ body{
   color:var(--text-muted);
 }
 .field .note{font:400 12px/1.4 var(--f-body); color:var(--text-faint)}
-input[type="text"],input[type="email"],input[type="tel"],input[type="url"],input[type="search"],textarea{
-  width:100%; min-height:var(--touch-comfort); padding:11px 14px;
+input[type="text"],input[type="number"],input[type="search"],select{
+  width:100%; min-height:var(--touch-comfort); padding:0 14px;
   background:var(--bg-sunken); color:var(--text-strong);
   border:1px solid var(--border-base); border-radius:var(--r-md);
   font:400 16px/1.4 var(--f-body);
 }
-textarea{min-height:88px; resize:vertical}
-input::placeholder,textarea::placeholder{color:var(--text-faint)}
-input:hover,textarea:hover{border-color:var(--border-strong)}
-input:focus,textarea:focus{background:var(--bg-surface)}
+select{
+  appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),
+                   linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 20px) 50%, calc(100% - 14px) 50%;
+  background-size:6px 6px, 6px 6px;
+  background-repeat:no-repeat;
+  padding-right:42px; cursor:pointer;
+}
+input[type="number"],input.nr{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+input::placeholder{color:var(--text-faint)}
+input:hover,select:hover{border-color:var(--border-strong)}
+input:focus,select:focus{background:var(--bg-surface)}
 
 .b{
   min-height:var(--touch-comfort); padding:0 20px; border-radius:var(--r-md);
@@ -174,34 +179,25 @@ input:focus,textarea:focus{background:var(--bg-surface)}
 .b-sm{min-height:var(--touch-min); padding:0 14px; font-size:14px}
 .b-danger{background:transparent; color:var(--err-text); border-color:var(--err-bd)}
 .b-danger:hover{background:var(--err-bg)}
-.b[disabled]{background:var(--bg-sunken); color:var(--text-faint); border-color:var(--border-subtle); cursor:not-allowed}
 .formbtns{display:flex; gap:10px; flex-wrap:wrap}
 
-/* Liste */
-.list{display:flex; flex-direction:column}
-.item{
-  display:grid; grid-template-columns:minmax(0,1fr) auto;
-  gap:12px; align-items:start; padding:14px 16px;
-  border-bottom:1px solid var(--border-subtle);
+/* Tabelle */
+.tscroll{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:14px}
+th{
+  text-align:left; padding:11px 13px; background:var(--bg-sunken); white-space:nowrap;
+  font:600 11px/1 var(--f-mono); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted); border-bottom:1px solid var(--border-base);
 }
-.item:last-child{border-bottom:0}
-.item.editing{background:var(--brand-quiet); box-shadow:inset 3px 0 0 var(--brand)}
-.item .t{min-width:0}
-.item .t b{display:block; font:600 17px/1.3 var(--f-display); color:var(--text-strong)}
-.kv{
-  display:flex; flex-wrap:wrap; gap:3px 16px; margin-top:5px;
-  font:400 13px/1.55 var(--f-mono); color:var(--text-faint);
-}
-.kv span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%}
-.kv a{color:var(--brand-text); text-decoration:none}
-.kv a:hover{text-decoration:underline}
-.item .notiz{
-  margin:8px 0 0; padding:8px 11px; border-radius:var(--r-sm);
-  background:var(--bg-sunken); border:1px solid var(--border-subtle);
-  font-size:13px; line-height:1.5; color:var(--text-muted);
-}
-.itembtns{display:flex; gap:7px; flex-wrap:wrap}
-.leer{font:400 13px/1.5 var(--f-mono); color:var(--text-faint)}
+td{padding:11px 13px; border-bottom:1px solid var(--border-subtle); color:var(--text-base)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.editing td{background:var(--brand-quiet)}
+tbody tr.editing td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
+.num{font-family:var(--f-mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+.right{text-align:right}
+td.strong{color:var(--text-strong); font-weight:500}
+td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
+.cellbtns{display:flex; gap:7px; flex-wrap:wrap}
 
 .msg{
   display:none; gap:10px; align-items:flex-start;
@@ -214,6 +210,7 @@ input:focus,textarea:focus{background:var(--bg-surface)}
 .msg.err{color:var(--err-text); background:var(--err-bg); border-color:var(--err-bd)}
 .msg .mark{flex:none; width:9px; height:9px; border-radius:50%; background:currentColor; margin-top:7px}
 .msg b{display:block; font-weight:600}
+.msg a{color:inherit}
 
 .empty{
   padding:34px 20px; text-align:center; color:var(--text-faint);
@@ -227,11 +224,8 @@ input:focus,textarea:focus{background:var(--bg-surface)}
   display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center;
 }
 
-:where(a,button,input,textarea,[tabindex]):focus-visible{
+:where(a,button,input,select,[tabindex]):focus-visible{
   outline:3px solid var(--focus-ring); outline-offset:2px; border-radius:var(--r-sm);
-}
-@media (max-width:640px){
-  .item{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
@@ -239,9 +233,9 @@ input:focus,textarea:focus{background:var(--bg-surface)}
 </style>
 
 <header class="topbar">
-  <div class="brand"><b>LO<span>T</span></b><em>Lieferanten</em></div>
+  <div class="brand"><b>LO<span>T</span></b><em>Artikel</em></div>
   <a class="ghost" href="bestellung.html">Zurück zur Bestellung</a>
-  <a class="ghost" href="artikel.html">Artikel</a>
+  <a class="ghost" href="lieferanten.html">Lieferanten</a>
   <button class="ghost" id="themeBtn" type="button">
     <span class="dot" aria-hidden="true"></span><span id="themeLabel">Dunkel</span>
   </button>
@@ -250,13 +244,11 @@ input:focus,textarea:focus{background:var(--bg-surface)}
 <main class="page">
 
   <div class="head">
-    <div>
-      <h2>Lieferanten</h2>
-    </div>
+    <div><h2>Artikel</h2></div>
     <div class="right">
-      <input id="search" type="search" placeholder="Lieferant suchen"
-             aria-label="Lieferanten durchsuchen" style="min-width:240px">
-      <button class="b b-primary" id="newBtn" type="button">Neuer Lieferant</button>
+      <input id="search" type="search" placeholder="Nummer, Bezeichnung oder Lieferant"
+             aria-label="Artikel durchsuchen" style="min-width:250px">
+      <button class="b b-primary" id="newBtn" type="button">Neuer Artikel</button>
     </div>
   </div>
 
@@ -265,41 +257,44 @@ input:focus,textarea:focus{background:var(--bg-surface)}
     <span><b id="msgTitle"></b><span id="msgText"></span></span>
   </div>
 
-  <!-- Erscheint erst, wenn erfasst oder bearbeitet wird -->
+  <!-- Erscheint erst auf Knopfdruck -->
   <div class="panel" id="formPanel" hidden>
-    <div class="panel-head" id="formHead">Neuer Lieferant</div>
+    <div class="panel-head" id="formHead">Neuer Artikel</div>
     <div class="panel-body">
       <div class="rows">
-        <div class="field wide">
-          <label for="fName">Name</label>
-          <input id="fName" type="text" autocomplete="off" placeholder="z. B. Opo Oeschger">
+        <div class="field">
+          <label for="fLieferant">Lieferant</label>
+          <select id="fLieferant"></select>
+          <span class="note">Kommt aus der Lieferantenliste.</span>
         </div>
         <div class="field">
-          <label for="fKunde">Unsere Kundennummer</label>
-          <input id="fKunde" type="text" autocomplete="off" inputmode="text">
-          <span class="note">Die Nummer, unter der wir dort geführt werden.</span>
+          <label for="fCode">Artikelnummer</label>
+          <input id="fCode" class="nr" type="text" autocomplete="off" autocapitalize="characters"
+                 autocorrect="off" spellcheck="false" placeholder="82.1025.40040">
+          <span class="note">Steht auf dem Etikett, muss eindeutig sein.</span>
         </div>
         <div class="field">
-          <label for="fPerson">Ansprechperson</label>
-          <input id="fPerson" type="text" autocomplete="off">
-        </div>
-        <div class="field">
-          <label for="fMail">Bestell-E-Mail</label>
-          <input id="fMail" type="email" autocomplete="off" inputmode="email"
-                 placeholder="bestellung@lieferant.ch">
-        </div>
-        <div class="field">
-          <label for="fTel">Telefon</label>
-          <input id="fTel" type="tel" autocomplete="off" inputmode="tel">
+          <label for="fEinheit">Einheit</label>
+          <select id="fEinheit"></select>
         </div>
         <div class="field wide">
-          <label for="fShop">Webshop</label>
-          <input id="fShop" type="url" autocomplete="off" inputmode="url"
-                 placeholder="https://">
+          <label for="fName">Bezeichnung</label>
+          <input id="fName" type="text" autocomplete="off"
+                 placeholder="Senkkopfschraube 4,0x40 T20 m. Schaft Inox A2">
         </div>
-        <div class="field wide">
-          <label for="fNotiz">Notiz</label>
-          <textarea id="fNotiz" placeholder="Lieferrhythmus, Konditionen, was man wissen muss"></textarea>
+        <div class="field">
+          <label for="fOrt">Lagerort</label>
+          <input id="fOrt" type="text" autocomplete="off" placeholder="Regal A / Fach 2">
+          <span class="note">Damit man ihn wiederfindet.</span>
+        </div>
+        <div class="field">
+          <label for="fSchritt">Gebinde</label>
+          <input id="fSchritt" type="number" min="1" step="1" value="1">
+          <span class="note">Verpackungseinheit — füllt die Schnelltasten beim Buchen.</span>
+        </div>
+        <div class="field">
+          <label for="fIst">Anfangsbestand</label>
+          <input id="fIst" type="number" min="0" step="1" value="0">
         </div>
       </div>
       <div class="formbtns">
@@ -310,8 +305,23 @@ input:focus,textarea:focus{background:var(--bg-surface)}
   </div>
 
   <div class="panel">
-    <div class="panel-head">Erfasst <span id="count" style="margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0"></span></div>
-    <div class="list" id="list"></div>
+    <div class="panel-head">Erfasst <span class="free" id="count"></span></div>
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Artikelnummer</th>
+            <th scope="col">Bezeichnung</th>
+            <th scope="col">Lieferant</th>
+            <th scope="col">Einheit</th>
+            <th scope="col">Ort</th>
+            <th scope="col" class="right">Gebinde</th>
+            <th scope="col">Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="list"></tbody>
+      </table>
+    </div>
   </div>
 
   <div class="foot">
@@ -326,22 +336,24 @@ input:focus,textarea:focus{background:var(--bg-surface)}
   "use strict";
 
   var root = document.documentElement;
-
-  var liste = LotStamm.ladeLieferanten();
-  var bearbeitet = null;   /* id des Lieferanten im Formular, null = neu */
+  var liste = LotStamm.ladeArtikel();
+  var bearbeitet = null;      /* code des Artikels im Formular, null = neu */
   var loeschKandidat = null;
-
-  function save() { LotStamm.speichereLieferanten(liste); }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
     });
   }
-  function neueId() {
-    var n = 1;
-    while (liste.some(function (x) { return x.id === 'l' + n; })) n++;
-    return 'l' + n;
+  function finde(code) {
+    for (var i = 0; i < liste.length; i++) if (liste[i].code === code) return liste[i];
+    return null;
+  }
+  function speichern() {
+    if (!LotStamm.speichereArtikel(liste)) {
+      say('warn', 'Nicht dauerhaft gespeichert. ',
+        'Der Browser lässt nichts ablegen — die Änderung gilt nur für diese Sitzung.');
+    }
   }
 
   /* ---------- Hell / Dunkel ---------- */
@@ -374,88 +386,134 @@ input:focus,textarea:focus{background:var(--bg-surface)}
   }
   function clearMsg() { msg.removeAttribute('data-show'); }
 
-  /* ---------- Formular ---------- */
+  /* ---------- Auswahllisten füllen ---------- */
   var F = {
+    lieferant: document.getElementById('fLieferant'),
+    code: document.getElementById('fCode'),
     name: document.getElementById('fName'),
-    kunde: document.getElementById('fKunde'),
-    person: document.getElementById('fPerson'),
-    mail: document.getElementById('fMail'),
-    tel: document.getElementById('fTel'),
-    shop: document.getElementById('fShop'),
-    notiz: document.getElementById('fNotiz')
+    einheit: document.getElementById('fEinheit'),
+    ort: document.getElementById('fOrt'),
+    schritt: document.getElementById('fSchritt'),
+    ist: document.getElementById('fIst')
   };
+
+  function fuelleLieferanten(gewaehlt) {
+    var namen = LotStamm.lieferantenNamen();
+    F.lieferant.innerHTML = '';
+    if (!namen.length) {
+      var leer = document.createElement('option');
+      leer.value = '';
+      leer.textContent = 'Noch keine Lieferanten erfasst';
+      F.lieferant.appendChild(leer);
+      return;
+    }
+    namen.forEach(function (n) {
+      var o = document.createElement('option');
+      o.value = n; o.textContent = n;
+      if (n === gewaehlt) o.selected = true;
+      F.lieferant.appendChild(o);
+    });
+    /* Ein Lieferant, der nur noch am Artikel hängt, darf nicht verschwinden */
+    if (gewaehlt && namen.indexOf(gewaehlt) === -1) {
+      var alt = document.createElement('option');
+      alt.value = gewaehlt;
+      alt.textContent = gewaehlt + ' (nicht mehr in der Liste)';
+      alt.selected = true;
+      F.lieferant.insertBefore(alt, F.lieferant.firstChild);
+    }
+  }
+
+  function fuelleEinheiten(gewaehlt) {
+    F.einheit.innerHTML = '';
+    var werte = LotStamm.EINHEITEN.slice();
+    if (gewaehlt && werte.indexOf(gewaehlt) === -1) werte.unshift(gewaehlt);
+    werte.forEach(function (e) {
+      var o = document.createElement('option');
+      o.value = e; o.textContent = e;
+      if (e === gewaehlt) o.selected = true;
+      F.einheit.appendChild(o);
+    });
+  }
+
+  /* ---------- Formular ---------- */
   var formPanel = document.getElementById('formPanel');
 
-  function formOeffnen(id) {
-    bearbeitet = id || null;
+  function formOeffnen(code) {
+    bearbeitet = code || null;
     loeschKandidat = null;
-    var l = id ? finde(id) : null;
-    document.getElementById('formHead').textContent = l ? 'Lieferant bearbeiten' : 'Neuer Lieferant';
-    F.name.value   = l ? l.name   : '';
-    F.kunde.value  = l ? l.kunde  : '';
-    F.person.value = l ? l.person : '';
-    F.mail.value   = l ? l.mail   : '';
-    F.tel.value    = l ? l.tel    : '';
-    F.shop.value   = l ? l.shop   : '';
-    F.notiz.value  = l ? l.notiz  : '';
+    var a = code ? finde(code) : null;
+    document.getElementById('formHead').textContent = a ? 'Artikel bearbeiten' : 'Neuer Artikel';
+    fuelleLieferanten(a ? a.lieferant : '');
+    fuelleEinheiten(a ? a.einheit : 'Stk');
+    F.code.value    = a ? a.code : '';
+    F.name.value    = a ? a.name : '';
+    F.ort.value     = a ? a.ort : '';
+    F.schritt.value = a ? a.schritt : 1;
+    F.ist.value     = a ? a.ist : 0;
+    /* Der Bestand wird beim Buchen geführt, nicht hier nachträglich verstellt */
+    F.ist.disabled = !!a;
     formPanel.hidden = false;
     clearMsg();
     render();
-    F.name.focus();
+    (a ? F.name : F.code).focus();
   }
   function formSchliessen() {
     formPanel.hidden = true;
     bearbeitet = null;
     render();
   }
-  function finde(id) {
-    for (var i = 0; i < liste.length; i++) if (liste[i].id === id) return liste[i];
-    return null;
-  }
 
-  document.getElementById('newBtn').addEventListener('click', function(){ formOeffnen(null); });
+  document.getElementById('newBtn').addEventListener('click', function () {
+    if (!LotStamm.lieferantenNamen().length) {
+      say('warn', 'Zuerst einen Lieferanten erfassen. ',
+        'Ein Artikel braucht einen Lieferanten — den legst du unter „Lieferanten" an.');
+      return;
+    }
+    formOeffnen(null);
+  });
   document.getElementById('cancelBtn').addEventListener('click', formSchliessen);
 
   document.getElementById('saveBtn').addEventListener('click', function () {
+    var code = F.code.value.trim().toUpperCase();
     var name = F.name.value.trim();
+    var lieferant = F.lieferant.value;
+
+    if (!code) {
+      say('err', 'Artikelnummer fehlt. ', 'Ohne Nummer lässt sich das Etikett nicht zuordnen.');
+      F.code.focus(); return;
+    }
     if (!name) {
-      say('err', 'Name fehlt. ', 'Ohne Namen lässt sich der Lieferant nicht zuordnen.');
-      F.name.focus();
-      return;
+      say('err', 'Bezeichnung fehlt. ', 'Sonst weiss beim Scannen niemand, was in der Hand liegt.');
+      F.name.focus(); return;
     }
-    var doppelt = liste.some(function (x) {
-      return x.id !== bearbeitet && x.name.toLowerCase() === name.toLowerCase();
-    });
+    if (!lieferant) {
+      say('err', 'Lieferant fehlt. ', 'Ohne Lieferant landet der Artikel auf keiner Bestellliste.');
+      F.lieferant.focus(); return;
+    }
+    var doppelt = liste.some(function (x) { return x.code !== bearbeitet && x.code === code; });
     if (doppelt) {
-      say('err', 'Gibt es schon. ', name + ' ist bereits erfasst.');
-      F.name.focus();
-      return;
+      say('err', 'Nummer gibt es schon. ', code + ' ist bereits vergeben.');
+      F.code.focus(); return;
     }
-    var mail = F.mail.value.trim();
-    if (mail && mail.indexOf('@') === -1) {
-      say('err', 'E-Mail unvollständig. ', 'Die Adresse braucht ein @ — oder lass das Feld leer.');
-      F.mail.focus();
-      return;
-    }
-    var daten = {
-      name: name,
-      kunde: F.kunde.value.trim(),
-      person: F.person.value.trim(),
-      mail: mail,
-      tel: F.tel.value.trim(),
-      shop: F.shop.value.trim(),
-      notiz: F.notiz.value.trim()
-    };
+    var schritt = parseInt(F.schritt.value, 10);
+    if (isNaN(schritt) || schritt < 1) schritt = 1;
+
     if (bearbeitet) {
-      var l = finde(bearbeitet);
-      for (var k in daten) if (Object.prototype.hasOwnProperty.call(daten, k)) l[k] = daten[k];
+      var a = finde(bearbeitet);
+      a.code = code; a.name = name; a.lieferant = lieferant;
+      a.einheit = F.einheit.value; a.ort = F.ort.value.trim(); a.schritt = schritt;
       say('ok', 'Gespeichert. ', name + ' wurde geändert.');
     } else {
-      daten.id = neueId();
-      liste.push(daten);
-      say('ok', 'Erfasst. ', name + ' steht jetzt in der Liste.');
+      var ist = parseInt(F.ist.value, 10);
+      if (isNaN(ist) || ist < 0) ist = 0;
+      liste.push({
+        code: code, name: name, einheit: F.einheit.value,
+        lieferant: lieferant, ort: F.ort.value.trim(),
+        ist: ist, schritt: schritt
+      });
+      say('ok', 'Erfasst. ', name + ' ist angelegt und beim Scannen sofort auffindbar.');
     }
-    save();
+    speichern();
     formSchliessen();
   });
 
@@ -464,86 +522,74 @@ input:focus,textarea:focus{background:var(--bg-surface)}
 
   function render() {
     var q = document.getElementById('search').value.trim().toLowerCase();
-    var box = document.getElementById('list');
-    box.innerHTML = '';
+    var tb = document.getElementById('list');
+    tb.innerHTML = '';
 
     var sortiert = liste.slice().sort(function (a, b) {
-      return a.name.localeCompare(b.name, 'de');
+      return a.code.localeCompare(b.code, 'de', { numeric:true });
     });
-    var gefiltert = sortiert.filter(function (l) {
+    var gefiltert = sortiert.filter(function (a) {
       if (!q) return true;
-      return (l.name + ' ' + l.kunde + ' ' + l.person + ' ' + l.mail + ' ' + l.notiz)
-             .toLowerCase().indexOf(q) !== -1;
+      return (a.code + ' ' + a.name + ' ' + a.lieferant + ' ' + a.ort).toLowerCase().indexOf(q) !== -1;
     });
 
     document.getElementById('count').textContent =
-      liste.length === 1 ? '1 Lieferant' : liste.length + ' Lieferanten';
+      liste.length === 1 ? '1 Artikel' : liste.length + ' Artikel';
 
     if (!liste.length) {
-      box.innerHTML = '<div class="empty"><b>Noch keine Lieferanten</b>' +
-        '<span>Oben auf „Neuer Lieferant" tippen.</span></div>';
+      tb.innerHTML = '<tr><td colspan="7"><div class="empty"><b>Noch keine Artikel</b>' +
+        '<span>Oben auf „Neuer Artikel" tippen.</span></div></td></tr>';
       return;
     }
     if (!gefiltert.length) {
-      box.innerHTML = '<div class="empty"><b>Nichts gefunden</b>' +
-        '<span>Andere Suche versuchen.</span></div>';
+      tb.innerHTML = '<tr><td colspan="7"><div class="empty"><b>Nichts gefunden</b>' +
+        '<span>Andere Suche versuchen.</span></div></td></tr>';
       return;
     }
 
-    gefiltert.forEach(function (l) {
-      var teile = [];
-      if (l.kunde)  teile.push('<span>Kd.-Nr. ' + esc(l.kunde) + '</span>');
-      if (l.person) teile.push('<span>' + esc(l.person) + '</span>');
-      if (l.mail)   teile.push('<span><a href="mailto:' + esc(l.mail) + '">' + esc(l.mail) + '</a></span>');
-      if (l.tel)    teile.push('<span><a href="tel:' + esc(l.tel.replace(/\s/g,'')) + '">' + esc(l.tel) + '</a></span>');
-      if (l.shop)   teile.push('<span><a href="' + esc(l.shop) + '" target="_blank" rel="noopener noreferrer">Webshop</a></span>');
-
-      var row = document.createElement('div');
-      row.className = 'item' + (bearbeitet === l.id ? ' editing' : '');
-      row.innerHTML =
-        '<div class="t">' +
-          '<b>' + esc(l.name) + '</b>' +
-          (teile.length
-            ? '<div class="kv">' + teile.join('') + '</div>'
-            : '<div class="kv"><span class="leer">Noch keine Angaben erfasst</span></div>') +
-          (l.notiz ? '<p class="notiz">' + esc(l.notiz) + '</p>' : '') +
-        '</div>' +
-        '<div class="itembtns">' +
-          '<button class="b b-secondary b-sm" data-act="edit" data-id="' + l.id + '">Bearbeiten</button>' +
-          '<button class="b b-danger b-sm" data-act="del" data-id="' + l.id + '">' +
-            (loeschKandidat === l.id ? 'Wirklich löschen?' : 'Löschen') +
+    gefiltert.forEach(function (a) {
+      var tr = document.createElement('tr');
+      if (bearbeitet === a.code) tr.className = 'editing';
+      tr.innerHTML =
+        '<td class="num strong">' + esc(a.code) + '</td>' +
+        '<td class="strong">' + esc(a.name) + '</td>' +
+        '<td>' + esc(a.lieferant) + '</td>' +
+        '<td>' + esc(a.einheit) + '</td>' +
+        '<td>' + (a.ort ? esc(a.ort) : '<span style="color:var(--text-faint)">—</span>') + '</td>' +
+        '<td class="num right">' + a.schritt + '</td>' +
+        '<td><div class="cellbtns">' +
+          '<button class="b b-secondary b-sm" data-act="edit" data-code="' + esc(a.code) + '">Bearbeiten</button>' +
+          '<button class="b b-danger b-sm" data-act="del" data-code="' + esc(a.code) + '">' +
+            (loeschKandidat === a.code ? 'Wirklich löschen?' : 'Löschen') +
           '</button>' +
-        '</div>';
-      box.appendChild(row);
+        '</div></td>';
+      tb.appendChild(tr);
     });
   }
 
   document.getElementById('list').addEventListener('click', function (e) {
     var btn = e.target.closest('button[data-act]');
     if (!btn) return;
-    var id = btn.getAttribute('data-id');
-    if (btn.getAttribute('data-act') === 'edit') {
-      formOeffnen(id);
-      return;
-    }
+    var code = btn.getAttribute('data-code');
+    if (btn.getAttribute('data-act') === 'edit') { formOeffnen(code); return; }
+
     /* Löschen: erster Klick fragt, zweiter führt aus */
-    if (loeschKandidat !== id) {
-      loeschKandidat = id;
+    if (loeschKandidat !== code) {
+      loeschKandidat = code;
       say('warn', 'Sicher? ', 'Nochmal auf „Wirklich löschen?" tippen, dann ist ' +
-        finde(id).name + ' weg. Ein Klick woanders bricht ab.');
+        finde(code).name + ' weg — samt Bestand. Ein Klick woanders bricht ab.');
       render();
       return;
     }
-    var name = finde(id).name;
-    liste = liste.filter(function (x) { return x.id !== id; });
+    var name = finde(code).name;
+    liste = liste.filter(function (x) { return x.code !== code; });
     loeschKandidat = null;
-    if (bearbeitet === id) formSchliessen();
-    save();
-    say('ok', 'Gelöscht. ', name + ' ist aus der Liste entfernt.');
+    if (bearbeitet === code) formSchliessen();
+    speichern();
+    say('ok', 'Gelöscht. ', name + ' ist aus dem Artikelstamm entfernt.');
     render();
   });
 
-  /* Klick ausserhalb bricht das Löschen ab */
   document.addEventListener('click', function (e) {
     if (!loeschKandidat) return;
     if (e.target.closest('button[data-act="del"]')) return;
