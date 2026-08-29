@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lot — Anmeldung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* =========================================================================
+   Lot — Anmeldung
+   Tokens identisch zu design/tokens.css (hier inline, damit die Seite
+   eigenstaendig laeuft). Im echten Build stattdessen tokens.css einbinden.
+   ========================================================================= */
+
+/* --- Rohpalette --- */
+:root{
+  --raw-o-50:#FFF4ED; --raw-o-100:#FFE4D3; --raw-o-200:#FFC5A3; --raw-o-300:#FFA96F;
+  --raw-o-400:#FF8A3D; --raw-o-500:#F26419; --raw-o-600:#D2500C; --raw-o-700:#A93C08;
+  --raw-o-800:#7C2C07; --raw-o-900:#4E1C05;
+  --raw-n-0:#FFFFFF; --raw-n-25:#FCFAF8; --raw-n-50:#FAF7F4; --raw-n-100:#F2EDE8;
+  --raw-n-200:#E4DCD4; --raw-n-300:#CDC3B9; --raw-n-400:#A79C91; --raw-n-500:#7E746A;
+  --raw-n-600:#5C554E; --raw-n-700:#423C36; --raw-n-800:#26211D; --raw-n-900:#171310;
+  --raw-n-950:#100D0B;
+  --raw-p-400:#4EB3B8; --raw-p-700:#0E5257; --raw-p-50:#E9F4F4;
+  --raw-ok-500:#1F7A4D; --raw-ok-400:#4FBF87; --raw-ok-50:#E7F4EC;
+  --raw-warn-700:#8A5A00; --raw-warn-400:#F5B301; --raw-warn-50:#FDF3DC;
+  --raw-err-600:#B3261E; --raw-err-400:#FF6B60; --raw-err-50:#FCEAE8;
+  --raw-info-600:#1A5F9E; --raw-info-400:#5FAEE8; --raw-info-50:#E8F1FA;
+}
+
+/* --- Hell --- */
+:root{
+  color-scheme:light;
+  --bg-app:var(--raw-n-50); --bg-surface:var(--raw-n-0); --bg-raised:var(--raw-n-25);
+  --bg-sunken:var(--raw-n-100);
+  --text-strong:var(--raw-n-900); --text-base:var(--raw-n-700);
+  --text-muted:var(--raw-n-600); --text-faint:var(--raw-n-500);
+  --text-on-brand:var(--raw-n-900);
+  --border-subtle:var(--raw-n-200); --border-base:var(--raw-n-300); --border-strong:var(--raw-n-400);
+  --brand:var(--raw-o-500); --brand-hover:var(--raw-o-600); --brand-active:var(--raw-o-700);
+  --brand-text:var(--raw-o-700); --brand-quiet:var(--raw-o-50); --brand-quiet-bd:var(--raw-o-200);
+  --focus-ring:var(--raw-o-600);
+  --ok-text:var(--raw-ok-500); --ok-bg:var(--raw-ok-50); --ok-bd:#A8D8BC;
+  --warn-text:var(--raw-warn-700); --warn-bg:var(--raw-warn-50); --warn-bd:#E8C777;
+  --err-text:var(--raw-err-600); --err-bg:var(--raw-err-50); --err-bd:#EFA9A3;
+  --shadow-1:0 1px 2px rgba(35,25,18,.07),0 1px 1px rgba(35,25,18,.04);
+  --shadow-2:0 2px 6px rgba(35,25,18,.09),0 8px 20px rgba(35,25,18,.06);
+  --r-sm:4px; --r-md:8px; --r-lg:12px; --r-pill:999px;
+  --touch-min:44px; --touch-comfort:56px;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,monospace;
+
+  /* Buehne links — in BEIDEN Themes dunkel, eigene Tokenfamilie */
+  --stage-bg:var(--raw-n-900);
+  --stage-bg-deep:var(--raw-n-950);
+  --stage-text:var(--raw-n-100);
+  --stage-muted:var(--raw-n-400);
+  --stage-line:#332C26;
+  --stage-brand:var(--raw-o-500);
+}
+
+/* --- Dunkel per System --- */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-raised:var(--raw-n-800);
+    --bg-sunken:#0A0806;
+    --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+    --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+    --text-on-brand:var(--raw-n-950);
+    --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+    --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+    --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+    --focus-ring:var(--raw-o-400);
+    --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+    --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+    --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+    --shadow-1:0 1px 2px rgba(0,0,0,.5);
+    --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
+    --stage-bg:#0B0908;
+    --stage-bg-deep:#060504;
+    --stage-line:#241F1B;
+  }
+}
+
+/* --- Dunkel per Wahl --- */
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-raised:var(--raw-n-800);
+  --bg-sunken:#0A0806;
+  --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+  --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+  --text-on-brand:var(--raw-n-950);
+  --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+  --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+  --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+  --focus-ring:var(--raw-o-400);
+  --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+  --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+  --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+  --shadow-1:0 1px 2px rgba(0,0,0,.5);
+  --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
+  --stage-bg:#0B0908;
+  --stage-bg-deep:#060504;
+  --stage-line:#241F1B;
+}
+
+/* ====================== Grundgeruest ==================================== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg-app); color:var(--text-base);
+  font:400 16px/1.6 var(--f-body); -webkit-font-smoothing:antialiased;
+}
+.screen{min-height:100%; display:grid; grid-template-columns:minmax(0,440px) minmax(0,1fr)}
+
+/* ====================== Buehne (links) ================================== */
+.stage{
+  position:relative; overflow:hidden;
+  background:linear-gradient(168deg, var(--stage-bg) 0%, var(--stage-bg-deep) 100%);
+  color:var(--stage-text);
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:44px 40px;
+}
+.plumbline{
+  position:absolute; top:0; bottom:0; left:96px; width:1px;
+  background:linear-gradient(to bottom, transparent, var(--stage-line) 12%, var(--stage-line) 88%, transparent);
+}
+.stage-top{position:relative; z-index:1}
+.wordmark{
+  font:700 46px/1 var(--f-display); letter-spacing:.02em;
+  margin:0; color:var(--stage-text);
+}
+.wordmark span{color:var(--stage-brand)}
+.tagline{
+  margin:14px 0 0; max-width:26ch;
+  font:400 15px/1.6 var(--f-body); color:var(--stage-muted);
+}
+.plumb{
+  position:absolute; left:96px; top:190px; z-index:1;
+  transform-origin:0 0;
+  animation:swing 3.4s cubic-bezier(.36,.07,.19,.97) 1 both;
+}
+.plumb svg{display:block; overflow:visible}
+@keyframes swing{
+  0%   {transform:rotate(11deg)}
+  22%  {transform:rotate(-7.5deg)}
+  44%  {transform:rotate(4.4deg)}
+  64%  {transform:rotate(-2.3deg)}
+  82%  {transform:rotate(1deg)}
+  100% {transform:rotate(0deg)}
+}
+.stage-foot{position:relative; z-index:1}
+.stage-foot dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:6px 18px}
+.stage-foot dt{
+  font:500 10px/1.6 var(--f-mono); letter-spacing:.12em; text-transform:uppercase;
+  color:var(--stage-muted);
+}
+.stage-foot dd{margin:0; font:500 12px/1.6 var(--f-mono); color:var(--stage-text)}
+
+/* ====================== Formularseite (rechts) ========================== */
+.side{
+  display:flex; flex-direction:column;
+  padding:28px 40px 40px; gap:24px; min-width:0;
+}
+.side-top{display:flex; align-items:center; gap:14px}
+.side-top .hint{
+  font:400 13px/1.5 var(--f-body); color:var(--text-faint); margin-right:auto;
+}
+.linkbtn{
+  min-height:var(--touch-min); padding:0 14px;
+  display:inline-flex; align-items:center; gap:8px;
+  background:transparent; color:var(--text-muted);
+  border:1px solid var(--border-subtle); border-radius:var(--r-pill);
+  font:500 13px/1 var(--f-body); cursor:pointer;
+}
+.linkbtn:hover{color:var(--text-strong); border-color:var(--border-base); background:var(--bg-surface)}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--brand); flex:none}
+
+.form-wrap{
+  flex:1; display:flex; align-items:center; justify-content:center;
+  padding:8px 0 20px;
+}
+.card{
+  width:100%; max-width:432px;
+  background:var(--bg-surface); border:1px solid var(--border-subtle);
+  border-radius:var(--r-lg); box-shadow:var(--shadow-2);
+  padding:28px; display:flex; flex-direction:column; gap:20px;
+}
+.card h1{
+  margin:0; font:600 24px/1.25 var(--f-display);
+  color:var(--text-strong); letter-spacing:-.01em; text-wrap:balance;
+}
+.card h1 + p{margin:-12px 0 0; font-size:14px; color:var(--text-muted)}
+
+/* ---- Bereichswahl: waechst mit, sobald mehr Bereiche dazukommen ---- */
+.areas-label{
+  font:500 12px/1 var(--f-mono); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted); margin:0 0 9px;
+}
+.areas{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:8px;
+}
+.area{
+  min-height:var(--touch-comfort); padding:10px 14px;
+  display:flex; flex-direction:column; justify-content:center; gap:3px;
+  background:var(--bg-surface); color:var(--text-strong);
+  border:1px solid var(--border-base); border-radius:var(--r-md);
+  font:500 15px/1.2 var(--f-body); cursor:pointer; text-align:left;
+}
+.area:hover{border-color:var(--border-strong); background:var(--bg-sunken)}
+.area[aria-pressed="true"]{
+  border-color:var(--brand); background:var(--brand-quiet);
+  box-shadow:inset 3px 0 0 var(--brand); font-weight:600;
+}
+.area small{
+  font:400 12px/1.3 var(--f-body); color:var(--text-faint);
+}
+.area[aria-pressed="true"] small{color:var(--brand-text)}
+.area[disabled]{
+  cursor:not-allowed; background:var(--bg-sunken); color:var(--text-faint);
+  border-style:dashed; border-color:var(--border-subtle);
+}
+.area[disabled]:hover{background:var(--bg-sunken); border-color:var(--border-subtle)}
+
+/* ---- Formularfelder ---- */
+.field{display:flex; flex-direction:column; gap:7px}
+.field label{
+  font:500 12px/1 var(--f-mono); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted);
+}
+.input-shell{position:relative; display:flex}
+input[type="password"],input[type="text"]{
+  width:100%; min-height:var(--touch-comfort); padding:0 14px;
+  background:var(--bg-sunken); color:var(--text-strong);
+  border:1px solid var(--border-base); border-radius:var(--r-md);
+  font:400 16px/1 var(--f-body);
+}
+input::placeholder{color:var(--text-faint)}
+input:hover{border-color:var(--border-strong)}
+input:focus{background:var(--bg-surface)}
+.input-shell .peek{
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  min-height:44px; padding:0 12px; border:0; border-radius:var(--r-sm);
+  background:transparent; color:var(--text-muted); cursor:pointer;
+  font:500 12px/1 var(--f-body);
+}
+.input-shell .peek:hover{color:var(--brand-text); background:var(--brand-quiet)}
+#pw{padding-right:78px}
+
+.row{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.check{
+  display:inline-flex; align-items:center; gap:9px; cursor:pointer;
+  min-height:var(--touch-min); font-size:14px; color:var(--text-base);
+}
+.check input{width:20px; height:20px; accent-color:var(--brand); cursor:pointer; margin:0}
+.textlink{
+  background:none; border:0; padding:0; cursor:pointer;
+  font:500 14px/1 var(--f-body); color:var(--brand-text);
+  text-decoration:underline; text-underline-offset:3px;
+}
+.textlink:hover{text-decoration-thickness:2px}
+
+.b{
+  min-height:var(--touch-comfort); padding:0 24px; border-radius:var(--r-md);
+  border:1px solid transparent; cursor:pointer;
+  font:600 16px/1 var(--f-body);
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+}
+.b-primary{background:var(--brand); color:var(--text-on-brand); width:100%}
+.b-primary:hover{background:var(--brand-hover)}
+.b-primary:active{background:var(--brand-active); color:#fff}
+
+/* ---- Meldungen ---- */
+.msg{
+  display:none; gap:10px; align-items:flex-start;
+  padding:12px 14px; border-radius:var(--r-md); border:1px solid;
+  font-size:14px; line-height:1.5;
+}
+.msg[data-show="1"]{display:flex}
+.msg.err{color:var(--err-text); background:var(--err-bg); border-color:var(--err-bd)}
+.msg.ok{color:var(--ok-text); background:var(--ok-bg); border-color:var(--ok-bd)}
+.msg.warn{color:var(--warn-text); background:var(--warn-bg); border-color:var(--warn-bd)}
+.msg b{display:block; font-weight:600}
+.msg .mark{
+  flex:none; width:9px; height:9px; border-radius:50%;
+  background:currentColor; margin-top:7px;
+}
+.shake{animation:shake .32s ease-in-out}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-7px)} 40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)} 80%{transform:translateX(3px)}
+}
+
+.card-foot{
+  border-top:1px solid var(--border-subtle); padding-top:14px;
+  font:400 12px/1.6 var(--f-mono); color:var(--text-faint);
+  display:flex; flex-wrap:wrap; gap:4px 16px;
+}
+.side-foot{
+  font:400 12px/1.6 var(--f-mono); color:var(--text-faint);
+  display:flex; flex-wrap:wrap; gap:4px 20px;
+}
+
+:where(a,button,input,[tabindex]):focus-visible{
+  outline:3px solid var(--focus-ring); outline-offset:2px; border-radius:var(--r-sm);
+}
+
+/* iPad hochkant und schmaler */
+@media (max-width:900px){
+  .screen{grid-template-columns:1fr; grid-template-rows:auto 1fr}
+  .stage{padding:26px 24px 30px; flex-direction:row; align-items:center; gap:20px}
+  .plumbline,.plumb{display:none}
+  .wordmark{font-size:34px}
+  .tagline{display:none}
+  .stage-foot{margin-left:auto}
+  .stage-foot dl{grid-template-columns:auto; gap:2px; text-align:right}
+  .side{padding:20px 22px 28px}
+  .card{padding:22px; max-width:520px}
+}
+@media (max-width:420px){
+  .stage-foot{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
+}
+</style>
+
+<div class="screen">
+
+  <!-- ============ Buehne ============ -->
+  <aside class="stage">
+    <div class="plumbline" aria-hidden="true"></div>
+
+    <div class="plumb" aria-hidden="true">
+      <svg width="70" height="200" viewBox="0 0 70 200" fill="none">
+        <line x1="0" y1="0" x2="0" y2="128" stroke="#4A4038" stroke-width="1.4"/>
+        <path d="M-11 128 L11 128 L11 160 L0 190 L-11 160 Z" fill="#F26419"/>
+        <path d="M0 128 L11 128 L11 160 L0 190 Z" fill="#A93C08"/>
+        <line x1="-11" y1="141" x2="11" y2="141" stroke="#4E1C05" stroke-width="1.2" opacity=".55"/>
+        <line x1="-11" y1="152" x2="11" y2="152" stroke="#4E1C05" stroke-width="1.2" opacity=".55"/>
+        <circle cx="0" cy="128" r="3.4" fill="#FFC5A3"/>
+      </svg>
+    </div>
+
+    <div class="stage-top">
+      <h1 class="wordmark">LO<span>T</span></h1>
+      <p class="tagline">Werkstatt und Auftrag an einem Ort. Vom Aufmass bis zur Montage.</p>
+    </div>
+
+    <div class="stage-foot">
+      <dl>
+        <dt>Version</dt><dd>0.1 · Entwurf</dd>
+      </dl>
+    </div>
+  </aside>
+
+  <!-- ============ Formularseite ============ -->
+  <main class="side">
+    <div class="side-top">
+      <p class="hint">Anmeldung für alle Bereiche von Lot.</p>
+      <button class="linkbtn" id="themeBtn" type="button">
+        <span class="dot" aria-hidden="true"></span>
+        <span id="themeLabel">Dunkel</span>
+      </button>
+    </div>
+
+    <div class="form-wrap">
+      <div class="card" id="card">
+
+        <h1>Anmelden</h1>
+        <p id="cardSub">Bereich wählen, Benutzername und Passwort eingeben.</p>
+
+        <div>
+          <p class="areas-label" id="areasLabel">Bereich</p>
+          <!-- Wird aus BEREICHE aufgebaut — neue Bereiche dort ergaenzen -->
+          <div class="areas" id="areas" role="group" aria-labelledby="areasLabel"></div>
+        </div>
+
+        <div class="msg" id="msg" role="status" aria-live="polite">
+          <span class="mark" aria-hidden="true"></span>
+          <span><b id="msgTitle"></b><span id="msgText"></span></span>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <div style="display:flex; flex-direction:column; gap:18px">
+            <div class="field">
+              <label for="user">Benutzername</label>
+              <input id="user" name="user" type="text" autocomplete="username"
+                     autocapitalize="none" autocorrect="off" spellcheck="false"
+                     placeholder="z. B. ricardo">
+            </div>
+            <div class="field">
+              <label for="pw">Passwort</label>
+              <div class="input-shell">
+                <input id="pw" name="pw" type="password" autocomplete="current-password"
+                       placeholder="Passwort eingeben">
+                <button class="peek" id="peek" type="button" aria-label="Passwort anzeigen">Zeigen</button>
+              </div>
+            </div>
+            <div class="row">
+              <label class="check">
+                <input type="checkbox" id="stay" checked>
+                <span>Angemeldet bleiben</span>
+              </label>
+              <button class="textlink" type="button" id="forgot">Passwort vergessen</button>
+            </div>
+            <button class="b b-primary" type="submit" id="submitBtn">Anmelden</button>
+          </div>
+        </form>
+
+        <div class="card-foot">
+          <span>Entwurf ohne Anmeldedienst</span>
+          <span>Test: ricardo / lot</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-foot">
+      <span>Lot 0.1</span>
+      <span>Beispieldaten, keine echten Konten</span>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =====================================================================
+     BEREICHE — hier neue Bereiche ergaenzen.
+     key   : interne Kennung
+     name  : Beschriftung auf der Kachel
+     note  : Zeile darunter, kurz halten
+     bald  : true = sichtbar, aber noch nicht anwaehlbar (Platzhalter)
+     ===================================================================== */
+  var BEREICHE = [
+    { key: 'bestellung', name: 'Bestellung', note: 'Material bestellen' },
+    { key: 'auftrag',    name: 'Auftrag',    note: 'folgt', bald: true },
+    { key: 'zeit',       name: 'Zeit',       note: 'folgt', bald: true }
+  ];
+
+  var root = document.documentElement;
+
+  /* ---------- Hell / Dunkel ---------- */
+  var themeBtn = document.getElementById('themeBtn');
+  var themeLabel = document.getElementById('themeLabel');
+  function systemDark() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function isDark() {
+    var t = root.getAttribute('data-theme');
+    if (t === 'dark') return true;
+    if (t === 'light') return false;
+    return systemDark();
+  }
+  function syncTheme() { themeLabel.textContent = isDark() ? 'Hell' : 'Dunkel'; }
+  themeBtn.addEventListener('click', function () {
+    root.setAttribute('data-theme', isDark() ? 'light' : 'dark');
+    syncTheme();
+  });
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+  }
+  syncTheme();
+
+  /* ---------- Meldungen ---------- */
+  var msg = document.getElementById('msg');
+  var msgTitle = document.getElementById('msgTitle');
+  var msgText = document.getElementById('msgText');
+  function say(kind, title, text) {
+    msg.className = 'msg ' + kind;
+    msg.setAttribute('data-show', '1');
+    msgTitle.textContent = title;
+    msgText.textContent = text;
+  }
+  function clearMsg() { msg.removeAttribute('data-show'); }
+
+  /* ---------- Bereichswahl ---------- */
+  var areas = document.getElementById('areas');
+  var current = BEREICHE[0];
+
+  BEREICHE.forEach(function (b, i) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'area';
+    btn.setAttribute('data-key', b.key);
+    btn.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    if (b.bald) { btn.disabled = true; }
+    var name = document.createElement('span');
+    name.textContent = b.name;
+    var note = document.createElement('small');
+    note.textContent = b.note;
+    btn.appendChild(name);
+    btn.appendChild(note);
+    areas.appendChild(btn);
+  });
+
+  areas.addEventListener('click', function (e) {
+    var btn = e.target.closest('.area');
+    if (!btn || btn.disabled) return;
+    var all = areas.querySelectorAll('.area');
+    for (var i = 0; i < all.length; i++) all[i].setAttribute('aria-pressed', 'false');
+    btn.setAttribute('aria-pressed', 'true');
+    var key = btn.getAttribute('data-key');
+    for (var j = 0; j < BEREICHE.length; j++) {
+      if (BEREICHE[j].key === key) current = BEREICHE[j];
+    }
+    clearMsg();
+  });
+
+  /* ---------- Passwort zeigen ---------- */
+  var peek = document.getElementById('peek');
+  var pw = document.getElementById('pw');
+  peek.addEventListener('click', function () {
+    var hidden = pw.type === 'password';
+    pw.type = hidden ? 'text' : 'password';
+    peek.textContent = hidden ? 'Verbergen' : 'Zeigen';
+    peek.setAttribute('aria-label', hidden ? 'Passwort verbergen' : 'Passwort anzeigen');
+    pw.focus();
+  });
+
+  /* ---------- Anmelden (Entwurf, keine echte Pruefung) ---------- */
+  var card = document.getElementById('card');
+  var user = document.getElementById('user');
+
+  function fail(title, text, field) {
+    say('err', title, text);
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+    if (field) field.focus();
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!user.value.trim()) {
+      fail('Benutzername fehlt. ', 'Trage den Namen ein, mit dem du angelegt wurdest.', user);
+      return;
+    }
+    if (!pw.value) {
+      fail('Passwort fehlt. ', 'Ohne Passwort geht es nicht weiter.', pw);
+      return;
+    }
+    if (user.value.trim().toLowerCase() !== 'ricardo' || pw.value !== 'lot') {
+      fail('Anmeldung nicht möglich. ', 'Benutzername oder Passwort stimmt nicht.', pw);
+      pw.value = '';
+      return;
+    }
+    say('ok', 'Angemeldet. ', current.name + ' wird geöffnet.');
+  });
+
+  document.getElementById('forgot').addEventListener('click', function () {
+    say('warn', 'Noch nicht eingerichtet. ',
+        'Das Zurücksetzen kommt, sobald der Anmeldedienst steht.');
+  });
+})();
+</script>

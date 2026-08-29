@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* Tokens wie design/tokens.css — inline, damit die Seite allein laeuft */
+:root{
+  --raw-o-400:#FF8A3D; --raw-o-500:#F26419; --raw-o-600:#D2500C; --raw-o-700:#A93C08;
+  --raw-o-50:#FFF4ED; --raw-o-200:#FFC5A3; --raw-o-900:#4E1C05;
+  --raw-n-0:#FFFFFF; --raw-n-25:#FCFAF8; --raw-n-50:#FAF7F4; --raw-n-100:#F2EDE8;
+  --raw-n-200:#E4DCD4; --raw-n-300:#CDC3B9; --raw-n-400:#A79C91; --raw-n-500:#7E746A;
+  --raw-n-600:#5C554E; --raw-n-700:#423C36; --raw-n-800:#26211D; --raw-n-900:#171310;
+  --raw-n-950:#100D0B;
+}
+:root{
+  color-scheme:light;
+  --bg-app:var(--raw-n-50); --bg-surface:var(--raw-n-0);
+  --text-strong:var(--raw-n-900); --text-base:var(--raw-n-700);
+  --text-muted:var(--raw-n-600); --text-faint:var(--raw-n-500);
+  --border-subtle:var(--raw-n-200); --border-base:var(--raw-n-300); --border-strong:var(--raw-n-400);
+  --brand:var(--raw-o-500); --brand-text:var(--raw-o-700);
+  --brand-quiet:var(--raw-o-50); --brand-quiet-bd:var(--raw-o-200);
+  --focus-ring:var(--raw-o-600);
+  --shadow-1:0 1px 2px rgba(35,25,18,.07),0 1px 1px rgba(35,25,18,.04);
+  --stage-bg:var(--raw-n-900); --stage-text:var(--raw-n-100); --stage-muted:var(--raw-n-400);
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900);
+    --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+    --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+    --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+    --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+    --focus-ring:var(--raw-o-400);
+    --shadow-1:0 1px 2px rgba(0,0,0,.5);
+    --stage-bg:#0B0908;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900);
+  --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+  --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+  --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+  --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+  --focus-ring:var(--raw-o-400);
+  --shadow-1:0 1px 2px rgba(0,0,0,.5);
+  --stage-bg:#0B0908;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg-app); color:var(--text-base);
+  font:400 16px/1.6 var(--f-body); -webkit-font-smoothing:antialiased;
+}
+.top{
+  background:var(--stage-bg); color:var(--stage-text);
+  padding:34px 24px 30px;
+}
+.top-in{max-width:880px; margin:0 auto; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+.mark{width:44px; height:44px; border-radius:4px; background:var(--brand); flex:none}
+h1{margin:0; font:700 38px/1 var(--f-display); letter-spacing:.02em; color:var(--stage-text)}
+h1 span{color:var(--brand)}
+.claim{margin:0; font:400 14px/1.5 var(--f-body); color:var(--stage-muted); width:100%; max-width:52ch}
+
+main{max-width:880px; margin:0 auto; padding:30px 24px 70px}
+.hint{
+  margin:0 0 22px; padding:13px 15px; max-width:66ch;
+  background:var(--brand-quiet); border:1px solid var(--brand-quiet-bd);
+  border-radius:8px; font-size:14px; line-height:1.55; color:var(--text-base);
+}
+.hint b{color:var(--text-strong)}
+.hint code{font:500 13px/1 var(--f-mono); color:var(--brand-text)}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px}
+a.card{
+  display:flex; flex-direction:column; gap:7px;
+  padding:20px; min-height:132px; text-decoration:none;
+  background:var(--bg-surface); border:1px solid var(--border-subtle);
+  border-left:3px solid var(--brand); border-radius:10px;
+  box-shadow:var(--shadow-1); color:var(--text-base);
+}
+a.card:hover{border-color:var(--border-strong); border-left-color:var(--brand)}
+a.card b{font:600 18px/1.25 var(--f-display); color:var(--text-strong)}
+a.card span{font-size:14px; color:var(--text-muted)}
+a.card em{
+  margin-top:auto; font:500 11px/1 var(--f-mono); letter-spacing:.1em;
+  text-transform:uppercase; font-style:normal; color:var(--brand-text);
+}
+:where(a):focus-visible{outline:3px solid var(--focus-ring); outline-offset:2px; border-radius:4px}
+
+footer{
+  max-width:880px; margin:0 auto; padding:0 24px 60px;
+  font:400 12px/1.6 var(--f-mono); color:var(--text-faint);
+  display:flex; flex-wrap:wrap; gap:4px 20px;
+}
+@media (max-width:520px){ h1{font-size:30px} }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="mark" aria-hidden="true"></div>
+    <h1>LO<span>T</span></h1>
+    <p class="claim">Werkstatt und Auftrag an einem Ort. Entwurfsstand der Web-App
+      für die Schreinerei — am PC und am iPad bedienbar.</p>
+  </div>
+</header>
+
+<main>
+  <p class="hint">
+    <b>Entwurf, kein fertiges System.</b> Es gibt keine echte Anmeldung und keine
+    Datenbank. Bestände werden nur im Browser des jeweiligen Geräts gemerkt.
+    Testzugang: <code>ricardo</code> / <code>lot</code>
+  </p>
+
+  <div class="grid">
+    <a class="card" href="/app/bestellung.html">
+      <b>Bestellung</b>
+      <span>Lager per QR-Etikett buchen, melden was fehlt, Bestellliste fürs Büro.</span>
+      <em>Hauptbereich</em>
+    </a>
+    <a class="card" href="/app/login.html">
+      <b>Anmeldung</b>
+      <span>Bereich wählen, mit Benutzername und Passwort anmelden.</span>
+      <em>Einstieg</em>
+    </a>
+    <a class="card" href="/design/farbkonzept.html">
+      <b>Späne &amp; Eiche</b>
+      <span>Das Farbsystem mit geprüften Kontrasten, hell und dunkel.</span>
+      <em>Grundlage</em>
+    </a>
+  </div>
+</main>
+
+<footer>
+  <span>Lot 0.1 · Entwurf</span>
+  <span>Beispieldaten, keine echten Konten</span>
+</footer>

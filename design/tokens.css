@@ -1,0 +1,242 @@
+/* ==========================================================================
+   Schreinerei Web-App — Farb- und Design-Tokens
+   Basis: Orange (Marke) · warme Neutrals (Holz) · Petrol (Sekundär)
+   Ziel: Bedienung an PC und iPad, auch bei Werkstattlicht.
+   Alle Text/Grund-Paare erfüllen WCAG AA (>= 4.5:1), Flächen/Rahmen >= 3:1.
+   ========================================================================== */
+
+/* --- 1. Rohpalette (Primitive) — nie direkt in Komponenten benutzen ------- */
+:root {
+  /* Orange · "Späne" — Marke, Aktion, Fokus */
+  --raw-o-50:  #FFF4ED;
+  --raw-o-100: #FFE4D3;
+  --raw-o-200: #FFC5A3;
+  --raw-o-300: #FFA96F;
+  --raw-o-400: #FF8A3D;
+  --raw-o-500: #F26419;  /* Markenfarbe */
+  --raw-o-600: #D2500C;
+  --raw-o-700: #A93C08;
+  --raw-o-800: #7C2C07;
+  --raw-o-900: #4E1C05;
+
+  /* Neutrals · "Eiche" — warm gebrochen, kein kaltes Grau */
+  --raw-n-0:   #FFFFFF;
+  --raw-n-25:  #FCFAF8;
+  --raw-n-50:  #FAF7F4;
+  --raw-n-100: #F2EDE8;
+  --raw-n-200: #E4DCD4;
+  --raw-n-300: #CDC3B9;
+  --raw-n-400: #A79C91;
+  --raw-n-500: #7E746A;
+  --raw-n-600: #5C554E;
+  --raw-n-700: #423C36;
+  --raw-n-800: #26211D;
+  --raw-n-900: #171310;
+  --raw-n-950: #100D0B;
+
+  /* Petrol · Sekundär — ruhige Flächen, Diagramme, Gegengewicht zu Orange */
+  --raw-p-50:  #E9F4F4;
+  --raw-p-100: #CDE7E8;
+  --raw-p-300: #7FCBCF;
+  --raw-p-400: #4EB3B8;
+  --raw-p-500: #1E7F85;
+  --raw-p-600: #14666B;
+  --raw-p-700: #0E5257;
+  --raw-p-800: #0A3D41;
+
+  /* Semantik-Rohtöne — bewusst NICHT orange, damit Status != Marke */
+  --raw-ok-500:   #1F7A4D;  --raw-ok-400:   #4FBF87;  --raw-ok-50:   #E7F4EC;
+  --raw-warn-700: #8A5A00;  --raw-warn-400: #F5B301;  --raw-warn-50: #FDF3DC;
+  --raw-err-600:  #B3261E;  --raw-err-400:  #FF6B60;  --raw-err-50:  #FCEAE8;
+  --raw-info-600: #1A5F9E;  --raw-info-400: #5FAEE8;  --raw-info-50: #E8F1FA;
+}
+
+/* --- 2. Semantische Tokens — HELL (Standard, Büro / iPad im Tageslicht) --- */
+:root {
+  color-scheme: light;
+
+  /* Gründe */
+  --bg-app:        var(--raw-n-50);   /* Seitenhintergrund */
+  --bg-surface:    var(--raw-n-0);    /* Karten, Panels, Tabellen */
+  --bg-raised:     var(--raw-n-25);   /* Kopfzeilen, Dropdowns */
+  --bg-sunken:     var(--raw-n-100);  /* Eingabefelder, Leerzustände */
+  --bg-inverse:    var(--raw-n-900);  /* Tooltips, Snackbars */
+
+  /* Text */
+  --text-strong:   var(--raw-n-900);  /* Überschriften, Zahlen   18.5:1 */
+  --text-base:     var(--raw-n-700);  /* Fliesstext              10.9:1 */
+  --text-muted:    var(--raw-n-600);  /* Labels, Metadaten        7.3:1 */
+  --text-faint:    var(--raw-n-500);  /* Platzhalter              4.5:1 */
+  --text-inverse:  var(--raw-n-50);
+  --text-on-brand: var(--raw-n-900);  /* auf Orangefläche         5.8:1 */
+
+  /* Rahmen */
+  --border-subtle: var(--raw-n-200);
+  --border-base:   var(--raw-n-300);
+  --border-strong: var(--raw-n-400);
+
+  /* Marke / Aktion */
+  --brand:          var(--raw-o-500);  /* Fläche, Logo, Akzentbalken */
+  --brand-hover:    var(--raw-o-600);
+  --brand-active:   var(--raw-o-700);
+  --brand-text:     var(--raw-o-700);  /* Orange als TEXT/Icon     6.3:1 */
+  --brand-quiet:    var(--raw-o-50);   /* Fläche aktiver Zeilen */
+  --brand-quiet-bd: var(--raw-o-200);
+  --focus-ring:     var(--raw-o-600);  /* Fokusring               4.3:1 */
+
+  /* Sekundär */
+  --accent:         var(--raw-p-700);
+  --accent-quiet:   var(--raw-p-50);
+  --accent-text:    var(--raw-p-700);
+
+  /* Status */
+  --ok-text:   var(--raw-ok-500);   --ok-bg:   var(--raw-ok-50);   --ok-bd:   #A8D8BC;
+  --warn-text: var(--raw-warn-700); --warn-bg: var(--raw-warn-50); --warn-bd: #E8C777;
+  --err-text:  var(--raw-err-600);  --err-bg:  var(--raw-err-50);  --err-bd:  #EFA9A3;
+  --info-text: var(--raw-info-600); --info-bg: var(--raw-info-50); --info-bd: #A9C9E6;
+
+  /* Schatten — warm getönt, nicht neutralschwarz */
+  --shadow-1: 0 1px 2px rgba(35, 25, 18, .07), 0 1px 1px rgba(35, 25, 18, .04);
+  --shadow-2: 0 2px 6px rgba(35, 25, 18, .09), 0 8px 20px rgba(35, 25, 18, .06);
+
+  /* Radien & Touch — iPad-tauglich */
+  --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-pill: 999px;
+  --touch-min: 44px;     /* Mindestgrösse jedes Bedienelements */
+  --touch-comfort: 56px; /* Primäraktionen in der Werkstatt    */
+
+  /* Typografie */
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body:    "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono:    "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
+}
+
+/* --- 3. DUNKEL per Systemeinstellung (Werkstatt, Abend) ------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg-app:        var(--raw-n-950);
+    --bg-surface:    var(--raw-n-900);
+    --bg-raised:     var(--raw-n-800);
+    --bg-sunken:     #0A0806;
+    --bg-inverse:    var(--raw-n-100);
+
+    --text-strong:   var(--raw-n-100);  /* 16.8:1 */
+    --text-base:     #DFD8D1;
+    --text-muted:    var(--raw-n-300);  /* 11.4:1 */
+    --text-faint:    var(--raw-n-400);  /*  7.3:1 */
+    --text-inverse:  var(--raw-n-900);
+    --text-on-brand: var(--raw-n-950);  /* Orange bleibt hell, Text dunkel */
+
+    --border-subtle: #2E2823;
+    --border-base:   var(--raw-n-700);
+    --border-strong: var(--raw-n-600);
+
+    --brand:          var(--raw-o-500);
+    --brand-hover:    var(--raw-o-400);
+    --brand-active:   var(--raw-o-300);
+    --brand-text:     var(--raw-o-400);  /* 8.3:1 auf dunkel */
+    --brand-quiet:    #2A1810;
+    --brand-quiet-bd: #5A3218;
+    --focus-ring:     var(--raw-o-400);
+
+    --accent:         var(--raw-p-400);
+    --accent-quiet:   #0C2B2D;
+    --accent-text:    var(--raw-p-400);
+
+    --ok-text:   var(--raw-ok-400);   --ok-bg:   #0E2B1C; --ok-bd:   #1F5638;
+    --warn-text: var(--raw-warn-400); --warn-bg: #2E2205; --warn-bd: #6B5008;
+    --err-text:  var(--raw-err-400);  --err-bg:  #2E1210; --err-bd:  #6E2A24;
+    --info-text: var(--raw-info-400); --info-bg: #0D2135; --info-bd: #22496E;
+
+    --shadow-1: 0 1px 2px rgba(0,0,0,.5);
+    --shadow-2: 0 2px 6px rgba(0,0,0,.55), 0 10px 24px rgba(0,0,0,.4);
+  }
+}
+
+/* --- 4. DUNKEL per ausdrücklicher Wahl (Umschalter in der App) ------------ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-app:        var(--raw-n-950);
+  --bg-surface:    var(--raw-n-900);
+  --bg-raised:     var(--raw-n-800);
+  --bg-sunken:     #0A0806;
+  --bg-inverse:    var(--raw-n-100);
+
+  --text-strong:   var(--raw-n-100);
+  --text-base:     #DFD8D1;
+  --text-muted:    var(--raw-n-300);
+  --text-faint:    var(--raw-n-400);
+  --text-inverse:  var(--raw-n-900);
+  --text-on-brand: var(--raw-n-950);
+
+  --border-subtle: #2E2823;
+  --border-base:   var(--raw-n-700);
+  --border-strong: var(--raw-n-600);
+
+  --brand:          var(--raw-o-500);
+  --brand-hover:    var(--raw-o-400);
+  --brand-active:   var(--raw-o-300);
+  --brand-text:     var(--raw-o-400);
+  --brand-quiet:    #2A1810;
+  --brand-quiet-bd: #5A3218;
+  --focus-ring:     var(--raw-o-400);
+
+  --accent:         var(--raw-p-400);
+  --accent-quiet:   #0C2B2D;
+  --accent-text:    var(--raw-p-400);
+
+  --ok-text:   var(--raw-ok-400);   --ok-bg:   #0E2B1C; --ok-bd:   #1F5638;
+  --warn-text: var(--raw-warn-400); --warn-bg: #2E2205; --warn-bd: #6B5008;
+  --err-text:  var(--raw-err-400);  --err-bg:  #2E1210; --err-bd:  #6E2A24;
+  --info-text: var(--raw-info-400); --info-bg: #0D2135; --info-bd: #22496E;
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,.5);
+  --shadow-2: 0 2px 6px rgba(0,0,0,.55), 0 10px 24px rgba(0,0,0,.4);
+}
+
+/* --- 5. Grundregeln als Code ---------------------------------------------
+   Regel 1: Orange traegt niemals weissen Text. Orangeflaeche => --text-on-brand
+   Regel 2: Orange als Text nur ueber --brand-text (nie --brand direkt)
+   Regel 3: Status niemals in Orange — sonst verschwimmt Marke mit Warnung
+   Regel 4: Hoechstens eine Orangeflaeche pro Bildschirmbereich
+   ------------------------------------------------------------------------- */
+
+.btn-primary {
+  min-height: var(--touch-comfort);
+  padding: 0 24px;
+  background: var(--brand);
+  color: var(--text-on-brand);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  font: 600 16px/1 var(--font-body);
+  cursor: pointer;
+}
+.btn-primary:hover  { background: var(--brand-hover); }
+.btn-primary:active { background: var(--brand-active); color: #fff; }
+
+.btn-secondary {
+  min-height: var(--touch-comfort);
+  padding: 0 20px;
+  background: var(--bg-surface);
+  color: var(--text-strong);
+  border: 1px solid var(--border-base);
+  border-radius: var(--r-md);
+  font: 500 16px/1 var(--font-body);
+  cursor: pointer;
+}
+.btn-secondary:hover { background: var(--bg-sunken); border-color: var(--border-strong); }
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}

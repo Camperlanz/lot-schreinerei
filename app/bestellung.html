@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lot — Bestellung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* =========================================================================
+   Lot — Bereich Bestellung: Scannen, Lager, Bestellliste
+   Tokens identisch zu design/tokens.css (inline, damit die Seite allein laeuft)
+   ========================================================================= */
+:root{
+  --raw-o-50:#FFF4ED; --raw-o-100:#FFE4D3; --raw-o-200:#FFC5A3; --raw-o-300:#FFA96F;
+  --raw-o-400:#FF8A3D; --raw-o-500:#F26419; --raw-o-600:#D2500C; --raw-o-700:#A93C08;
+  --raw-o-800:#7C2C07; --raw-o-900:#4E1C05;
+  --raw-n-0:#FFFFFF; --raw-n-25:#FCFAF8; --raw-n-50:#FAF7F4; --raw-n-100:#F2EDE8;
+  --raw-n-200:#E4DCD4; --raw-n-300:#CDC3B9; --raw-n-400:#A79C91; --raw-n-500:#7E746A;
+  --raw-n-600:#5C554E; --raw-n-700:#423C36; --raw-n-800:#26211D; --raw-n-900:#171310;
+  --raw-n-950:#100D0B;
+  --raw-p-400:#4EB3B8; --raw-p-700:#0E5257; --raw-p-50:#E9F4F4;
+  --raw-ok-500:#1F7A4D; --raw-ok-400:#4FBF87; --raw-ok-50:#E7F4EC;
+  --raw-warn-700:#8A5A00; --raw-warn-400:#F5B301; --raw-warn-50:#FDF3DC;
+  --raw-err-600:#B3261E; --raw-err-400:#FF6B60; --raw-err-50:#FCEAE8;
+  --raw-info-600:#1A5F9E; --raw-info-400:#5FAEE8; --raw-info-50:#E8F1FA;
+}
+:root{
+  color-scheme:light;
+  --bg-app:var(--raw-n-50); --bg-surface:var(--raw-n-0); --bg-raised:var(--raw-n-25);
+  --bg-sunken:var(--raw-n-100);
+  --text-strong:var(--raw-n-900); --text-base:var(--raw-n-700);
+  --text-muted:var(--raw-n-600); --text-faint:var(--raw-n-500);
+  --text-on-brand:var(--raw-n-900);
+  --border-subtle:var(--raw-n-200); --border-base:var(--raw-n-300); --border-strong:var(--raw-n-400);
+  --brand:var(--raw-o-500); --brand-hover:var(--raw-o-600); --brand-active:var(--raw-o-700);
+  --brand-text:var(--raw-o-700); --brand-quiet:var(--raw-o-50); --brand-quiet-bd:var(--raw-o-200);
+  --focus-ring:var(--raw-o-600);
+  --accent:var(--raw-p-700); --accent-quiet:var(--raw-p-50);
+  --ok-text:var(--raw-ok-500); --ok-bg:var(--raw-ok-50); --ok-bd:#A8D8BC;
+  --warn-text:var(--raw-warn-700); --warn-bg:var(--raw-warn-50); --warn-bd:#E8C777;
+  --err-text:var(--raw-err-600); --err-bg:var(--raw-err-50); --err-bd:#EFA9A3;
+  --info-text:var(--raw-info-600); --info-bg:var(--raw-info-50); --info-bd:#A9C9E6;
+  --shadow-1:0 1px 2px rgba(35,25,18,.07),0 1px 1px rgba(35,25,18,.04);
+  --shadow-2:0 2px 6px rgba(35,25,18,.09),0 8px 20px rgba(35,25,18,.06);
+  --r-sm:4px; --r-md:8px; --r-lg:12px; --r-pill:999px;
+  --touch-min:44px; --touch-comfort:56px;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,monospace;
+  --topbar-bg:var(--raw-n-900); --topbar-text:var(--raw-n-100); --topbar-muted:var(--raw-n-400);
+  --topbar-line:#332C26;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-raised:var(--raw-n-800);
+    --bg-sunken:#0A0806;
+    --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+    --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+    --text-on-brand:var(--raw-n-950);
+    --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+    --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+    --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+    --focus-ring:var(--raw-o-400);
+    --accent:var(--raw-p-400); --accent-quiet:#0C2B2D;
+    --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+    --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+    --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+    --info-text:var(--raw-info-400); --info-bg:#0D2135; --info-bd:#22496E;
+    --shadow-1:0 1px 2px rgba(0,0,0,.5);
+    --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
+    --topbar-bg:#0B0908; --topbar-line:#241F1B;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-raised:var(--raw-n-800);
+  --bg-sunken:#0A0806;
+  --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+  --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+  --text-on-brand:var(--raw-n-950);
+  --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+  --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+  --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+  --focus-ring:var(--raw-o-400);
+  --accent:var(--raw-p-400); --accent-quiet:#0C2B2D;
+  --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+  --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+  --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+  --info-text:var(--raw-info-400); --info-bg:#0D2135; --info-bd:#22496E;
+  --shadow-1:0 1px 2px rgba(0,0,0,.5);
+  --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
+  --topbar-bg:#0B0908; --topbar-line:#241F1B;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg-app); color:var(--text-base);
+  font:400 16px/1.6 var(--f-body); -webkit-font-smoothing:antialiased;
+}
+
+/* ---------------- Kopfleiste ---------------- */
+.topbar{
+  background:var(--topbar-bg); color:var(--topbar-text);
+  border-bottom:1px solid var(--topbar-line);
+  padding:12px 20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.brand{display:flex; align-items:baseline; gap:10px; margin-right:auto}
+.brand b{font:700 21px/1 var(--f-display); letter-spacing:.02em}
+.brand b span{color:var(--brand)}
+.brand em{
+  font:500 12px/1 var(--f-mono); font-style:normal; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--topbar-muted);
+  border-left:1px solid var(--topbar-line); padding-left:10px;
+}
+.who{display:inline-flex; align-items:center; gap:8px; font:500 13px/1 var(--f-body); color:var(--topbar-muted)}
+.who i{
+  font-style:normal; width:28px; height:28px; border-radius:var(--r-sm);
+  display:grid; place-items:center; background:var(--brand); color:var(--raw-n-900);
+  font:600 11px/1 var(--f-mono);
+}
+.ghost{
+  min-height:var(--touch-min); padding:0 13px;
+  display:inline-flex; align-items:center; gap:8px;
+  background:transparent; color:var(--topbar-muted);
+  border:1px solid var(--topbar-line); border-radius:var(--r-pill);
+  font:500 13px/1 var(--f-body); cursor:pointer;
+}
+.ghost:hover{color:var(--topbar-text); border-color:var(--topbar-muted)}
+.ghost .dot{width:9px; height:9px; border-radius:50%; background:var(--brand)}
+.ghost.off .dot{background:var(--topbar-muted)}
+
+/* ---------------- Reiter ---------------- */
+.tabs{
+  display:flex; gap:2px; padding:0 20px;
+  background:var(--bg-raised); border-bottom:1px solid var(--border-subtle);
+  overflow-x:auto;
+}
+.tab{
+  min-height:var(--touch-comfort); padding:0 18px;
+  display:inline-flex; align-items:center; gap:9px; white-space:nowrap;
+  background:transparent; border:0; border-bottom:3px solid transparent;
+  color:var(--text-muted); cursor:pointer; font:500 15px/1 var(--f-body);
+}
+.tab:hover{color:var(--text-strong)}
+.tab[aria-selected="true"]{color:var(--text-strong); font-weight:600; border-bottom-color:var(--brand)}
+.badge{
+  min-width:22px; height:22px; padding:0 7px; border-radius:var(--r-pill);
+  display:inline-grid; place-items:center;
+  font:600 12px/1 var(--f-mono); font-variant-numeric:tabular-nums;
+  background:var(--warn-bg); color:var(--warn-text); border:1px solid var(--warn-bd);
+}
+.badge.zero{background:var(--bg-sunken); color:var(--text-faint); border-color:var(--border-subtle)}
+
+/* ---------------- Layout ---------------- */
+.page{max-width:1080px; margin:0 auto; padding:22px 20px 72px}
+.view[hidden]{display:none}
+.view{display:flex; flex-direction:column; gap:18px}
+.head{display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap}
+.head h2{margin:0; font:600 21px/1.2 var(--f-display); color:var(--text-strong); letter-spacing:-.01em}
+.head p{margin:0; font-size:14px; color:var(--text-muted); max-width:62ch}
+.head .right{margin-left:auto; display:flex; gap:10px; flex-wrap:wrap}
+
+.panel{
+  background:var(--bg-surface); border:1px solid var(--border-subtle);
+  border-radius:var(--r-lg); box-shadow:var(--shadow-1);
+}
+.panel-head{
+  padding:13px 16px; border-bottom:1px solid var(--border-subtle);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  font:600 11px/1 var(--f-mono); letter-spacing:.1em; text-transform:uppercase;
+  color:var(--text-muted);
+}
+.panel-head .free{
+  margin-left:auto; font:400 12px/1 var(--f-mono); letter-spacing:0;
+  text-transform:none; color:var(--text-faint);
+}
+.panel-body{padding:16px; display:flex; flex-direction:column; gap:14px}
+
+/* ---------------- Scan-Anzeige ---------------- */
+.stage{
+  border-radius:var(--r-lg); border:2px solid var(--border-base);
+  background:var(--bg-surface); padding:22px 20px;
+  display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+  min-height:150px;
+}
+.stage.ok{border-color:var(--ok-bd); background:var(--ok-bg)}
+.stage.warn{border-color:var(--warn-bd); background:var(--warn-bg)}
+.stage.err{border-color:var(--err-bd); background:var(--err-bg)}
+.stage.pulse{animation:pop .3s ease-out}
+@keyframes pop{0%{transform:scale(.985)} 60%{transform:scale(1.008)} 100%{transform:scale(1)}}
+
+.reticle{width:96px; height:96px; position:relative; color:var(--brand); flex:none}
+.reticle span{position:absolute; width:28px; height:28px; border:3px solid currentColor; border-radius:3px}
+.reticle span:nth-child(1){top:0; left:0; border-right:0; border-bottom:0}
+.reticle span:nth-child(2){top:0; right:0; border-left:0; border-bottom:0}
+.reticle span:nth-child(3){bottom:0; left:0; border-right:0; border-top:0}
+.reticle span:nth-child(4){bottom:0; right:0; border-left:0; border-top:0}
+.reticle::after{
+  content:""; position:absolute; left:8px; right:8px; top:50%; height:2px;
+  background:var(--brand); opacity:.85; animation:sweep 2.4s ease-in-out infinite;
+}
+@keyframes sweep{0%,100%{transform:translateY(-36px)} 50%{transform:translateY(36px)}}
+.stage.ok .reticle{color:var(--ok-text)}
+.stage.warn .reticle{color:var(--warn-text)}
+.stage.err .reticle{color:var(--err-text)}
+
+.stage-text{min-width:0; flex:1}
+.stage-kicker{
+  margin:0 0 6px; font:600 11px/1 var(--f-mono); letter-spacing:.12em;
+  text-transform:uppercase; color:var(--text-muted);
+}
+.stage.ok .stage-kicker{color:var(--ok-text)}
+.stage.warn .stage-kicker{color:var(--warn-text)}
+.stage.err .stage-kicker{color:var(--err-text)}
+.stage-title{
+  margin:0; font:600 27px/1.15 var(--f-display); color:var(--text-strong);
+  letter-spacing:-.015em; text-wrap:balance;
+}
+.stage-sub{margin:8px 0 0; font-size:15px; color:var(--text-muted)}
+.stage-sub b{color:var(--text-strong); font-weight:600; font-family:var(--f-mono)}
+
+/* Statuszeile unter der Scan-Anzeige */
+.scanstate{
+  margin:-4px 0 0; padding:0 4px;
+  font:400 12px/1.5 var(--f-mono); color:var(--text-faint);
+}
+
+/* Mengen-Schnellwahl in der Artikelkarte */
+.chipset{display:flex; gap:7px; flex-wrap:wrap}
+.chip{
+  min-height:var(--touch-min); padding:0 16px;
+  background:var(--bg-surface); border:1px solid var(--border-base); border-radius:var(--r-pill);
+  color:var(--text-base); font:500 15px/1 var(--f-mono); font-variant-numeric:tabular-nums;
+  cursor:pointer;
+}
+.chip:hover{border-color:var(--border-strong); background:var(--bg-sunken)}
+.chip[aria-pressed="true"]{
+  background:var(--brand-quiet); border-color:var(--brand); color:var(--brand-text); font-weight:600;
+}
+
+/* ---------------- Formularelemente ---------------- */
+input[type="text"],input[type="search"],input[type="number"]{
+  width:100%; min-height:var(--touch-comfort); padding:0 14px;
+  background:var(--bg-sunken); color:var(--text-strong);
+  border:1px solid var(--border-base); border-radius:var(--r-md);
+  font:400 16px/1 var(--f-body);
+}
+input::placeholder{color:var(--text-faint)}
+input:hover{border-color:var(--border-strong)}
+input:focus{background:var(--bg-surface)}
+input[type="number"]{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+
+.b{
+  min-height:var(--touch-comfort); padding:0 20px; border-radius:var(--r-md);
+  border:1px solid transparent; cursor:pointer; font:600 16px/1 var(--f-body);
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+}
+.b-primary{background:var(--brand); color:var(--text-on-brand)}
+.b-primary:hover{background:var(--brand-hover)}
+.b-primary:active{background:var(--brand-active); color:#fff}
+.b-secondary{background:var(--bg-surface); color:var(--text-strong); border-color:var(--border-base)}
+.b-secondary:hover{background:var(--bg-sunken); border-color:var(--border-strong)}
+.b-sm{min-height:var(--touch-min); padding:0 14px; font-size:14px}
+.b[disabled]{background:var(--bg-sunken); color:var(--text-faint); border-color:var(--border-subtle); cursor:not-allowed}
+.b-flag{width:100%; background:var(--warn-bg); color:var(--warn-text); border-color:var(--warn-bd)}
+.b-flag:hover{filter:brightness(.97)}
+.b-flag.on{background:var(--bg-surface); color:var(--text-muted); border-color:var(--border-base)}
+
+.handline{display:flex; gap:8px; flex-wrap:wrap}
+.handline input{flex:1; min-width:190px}
+.demo-codes{display:flex; flex-wrap:wrap; gap:7px}
+.demo-code{
+  min-height:var(--touch-min); padding:0 12px;
+  background:var(--bg-surface); color:var(--text-base);
+  border:1px solid var(--border-base); border-radius:var(--r-pill);
+  font:500 12px/1 var(--f-mono); cursor:pointer;
+}
+.demo-code:hover{border-color:var(--brand); color:var(--brand-text); background:var(--brand-quiet)}
+
+/* ---------------- Artikelkarte ---------------- */
+.article{display:flex; flex-direction:column; gap:14px}
+.article .name{margin:0; font:600 19px/1.25 var(--f-display); color:var(--text-strong)}
+.article .meta{
+  display:flex; flex-wrap:wrap; gap:6px 16px;
+  font:400 13px/1.5 var(--f-mono); color:var(--text-faint);
+}
+.stockline{
+  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  padding:13px 15px; border-radius:var(--r-md);
+  background:var(--bg-sunken); border:1px solid var(--border-subtle);
+}
+.stockline .big{font:600 32px/1 var(--f-mono); font-variant-numeric:tabular-nums; color:var(--text-strong)}
+.stockline .unit{font:500 15px/1 var(--f-body); color:var(--text-muted)}
+.stockline .of{margin-left:auto; font:400 13px/1.4 var(--f-mono); color:var(--text-faint); text-align:right}
+.stepper{display:grid; grid-template-columns:60px minmax(0,1fr) 60px; gap:9px}
+.stepper button{
+  border:1px solid var(--border-base); border-radius:var(--r-md);
+  background:var(--bg-surface); color:var(--text-strong);
+  font:500 24px/1 var(--f-mono); cursor:pointer; min-height:var(--touch-comfort);
+}
+.stepper button:hover{background:var(--bg-sunken); border-color:var(--border-strong)}
+.stepper input{text-align:center; font:600 24px/1 var(--f-mono); font-variant-numeric:tabular-nums}
+.actions{display:grid; grid-template-columns:1fr 1fr; gap:9px}
+
+/* ---------------- Status ---------------- */
+.pill{
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+  padding:5px 11px 5px 9px; border-radius:var(--r-pill);
+  font:500 13px/1 var(--f-body); border:1px solid;
+}
+.pill::before{content:""; width:8px; height:8px; border-radius:50%; background:currentColor; flex:none}
+.pill.ok{color:var(--ok-text); background:var(--ok-bg); border-color:var(--ok-bd)}
+.pill.warn{color:var(--warn-text); background:var(--warn-bg); border-color:var(--warn-bd)}
+.pill.err{color:var(--err-text); background:var(--err-bg); border-color:var(--err-bd)}
+.pill.info{color:var(--info-text); background:var(--info-bg); border-color:var(--info-bd)}
+
+/* ---------------- Tabellen ---------------- */
+.tscroll{overflow-x:auto; border:1px solid var(--border-subtle); border-radius:var(--r-md)}
+table{width:100%; border-collapse:collapse; font-size:14px}
+th{
+  text-align:left; padding:11px 13px; background:var(--bg-sunken); white-space:nowrap;
+  font:600 11px/1 var(--f-mono); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted); border-bottom:1px solid var(--border-base);
+}
+td{padding:11px 13px; border-bottom:1px solid var(--border-subtle); color:var(--text-base)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.flagged td{background:var(--warn-bg)}
+.num{font-family:var(--f-mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+.right{text-align:right}
+td.strong{color:var(--text-strong); font-weight:500}
+td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
+.cellbtns{display:flex; gap:7px; flex-wrap:wrap}
+
+/* ---------------- Bestellliste ---------------- */
+.supplier + .supplier{margin-top:14px}
+.sup-head{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:12px 16px; background:var(--bg-raised);
+  border:1px solid var(--border-subtle); border-radius:var(--r-md) var(--r-md) 0 0;
+}
+.sup-head h4{margin:0; font:600 16px/1.2 var(--f-display); color:var(--text-strong)}
+.sup-head .cnt{font:500 12px/1 var(--f-mono); color:var(--text-faint); margin-left:auto}
+.sup-body{border:1px solid var(--border-subtle); border-top:0; border-radius:0 0 var(--r-md) var(--r-md); overflow:hidden}
+.line{
+  display:grid; grid-template-columns:minmax(0,1fr) auto auto auto;
+  gap:12px; align-items:center; padding:12px 16px;
+  border-bottom:1px solid var(--border-subtle); background:var(--bg-surface);
+}
+.line:last-child{border-bottom:0}
+.line .t{min-width:0}
+.line .t b{display:block; font:500 15px/1.3 var(--f-body); color:var(--text-strong)}
+.line .t span{display:block; font:400 12px/1.5 var(--f-mono); color:var(--text-faint)}
+.line .have{font:400 13px/1.4 var(--f-mono); color:var(--text-muted); text-align:right; white-space:nowrap}
+.line .qty{display:flex; align-items:center; gap:8px}
+.line .qty input{width:92px; min-height:var(--touch-min); text-align:center; padding:0 8px}
+.line .qty span{font:400 13px/1 var(--f-mono); color:var(--text-faint); min-width:44px}
+
+.summary{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:14px 16px; border-radius:var(--r-md);
+  background:var(--brand-quiet); border:1px solid var(--brand-quiet-bd);
+}
+.summary b{color:var(--text-strong); font:600 15px/1.3 var(--f-body)}
+.summary span{font:400 13px/1.4 var(--f-body); color:var(--text-muted)}
+.summary .b{margin-left:auto}
+
+/* ---------------- Meldung ---------------- */
+.msg{
+  display:none; gap:10px; align-items:flex-start;
+  padding:12px 14px; border-radius:var(--r-md); border:1px solid;
+  font-size:14px; line-height:1.5;
+}
+.msg[data-show="1"]{display:flex}
+.msg.ok{color:var(--ok-text); background:var(--ok-bg); border-color:var(--ok-bd)}
+.msg.warn{color:var(--warn-text); background:var(--warn-bg); border-color:var(--warn-bd)}
+.msg.err{color:var(--err-text); background:var(--err-bg); border-color:var(--err-bd)}
+.msg.info{color:var(--info-text); background:var(--info-bg); border-color:var(--info-bd)}
+.msg .mark{flex:none; width:9px; height:9px; border-radius:50%; background:currentColor; margin-top:7px}
+.msg b{display:block; font-weight:600}
+
+.empty{
+  padding:30px 20px; text-align:center; color:var(--text-faint);
+  display:flex; flex-direction:column; gap:8px; align-items:center;
+}
+.empty b{color:var(--text-muted); font:600 16px/1.3 var(--f-body)}
+
+.foot{
+  margin-top:26px; padding-top:14px; border-top:1px solid var(--border-subtle);
+  font:400 12px/1.6 var(--f-mono); color:var(--text-faint);
+  display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center;
+}
+
+:where(a,button,input,[tabindex]):focus-visible{
+  outline:3px solid var(--focus-ring); outline-offset:2px; border-radius:var(--r-sm);
+}
+
+@media (max-width:860px){
+  .stage{gap:16px; padding:18px 16px}
+  .stage-title{font-size:23px}
+  .line{grid-template-columns:minmax(0,1fr); row-gap:8px}
+  .line .have{text-align:left}
+}
+@media (max-width:520px){
+  .reticle{width:72px; height:72px}
+  .reticle span{width:22px; height:22px}
+  @keyframes sweep{0%,100%{transform:translateY(-26px)} 50%{transform:translateY(26px)}}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
+  .reticle::after{animation:none; transform:translateY(0)}
+}
+</style>
+
+<header class="topbar">
+  <div class="brand"><b>LO<span>T</span></b><em>Bestellung</em></div>
+  <div class="who"><i aria-hidden="true">RS</i><span>Ricardo</span></div>
+  <button class="ghost" id="soundBtn" type="button" aria-pressed="true">
+    <span class="dot" aria-hidden="true"></span><span id="soundLabel">Ton an</span>
+  </button>
+  <button class="ghost" id="themeBtn" type="button">
+    <span class="dot" aria-hidden="true"></span><span id="themeLabel">Dunkel</span>
+  </button>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Bereich Bestellung">
+  <button class="tab" id="tabScan" role="tab" aria-selected="true" aria-controls="viewScan" type="button">Scannen</button>
+  <button class="tab" id="tabLager" role="tab" aria-selected="false" aria-controls="viewLager" type="button">
+    Lager <span class="badge zero" id="badgeLager">0</span>
+  </button>
+  <button class="tab" id="tabBestellen" role="tab" aria-selected="false" aria-controls="viewBestellen" type="button">
+    Bestellen <span class="badge zero" id="badgeBestellen">0</span>
+  </button>
+</nav>
+
+<main class="page">
+
+  <!-- ================= Scannen ================= -->
+  <section class="view" id="viewScan" role="tabpanel" aria-labelledby="tabScan">
+    <div class="head">
+      <div>
+        <h2>Scannen</h2>
+        <p>Etikett scannen, dann entscheiden — der Scanner muss nirgends hineinklicken, die App hört immer mit.</p>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="reticle" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="stage-text">
+        <p class="stage-kicker" id="stageKicker">Bereit</p>
+        <h3 class="stage-title" id="stageTitle">Etikett scannen</h3>
+        <p class="stage-sub" id="stageSub">Der Scanner am iPad wird wie eine Tastatur gelesen — einfach abdrücken.</p>
+      </div>
+    </div>
+
+    <p class="scanstate" id="scannerState">Scanner bereit</p>
+
+    <div class="panel">
+      <div class="panel-head">Ohne Scanner erfassen</div>
+      <div class="panel-body">
+        <div class="handline">
+          <input id="codeInput" type="text" inputmode="text" autocapitalize="characters"
+                 autocorrect="off" spellcheck="false" placeholder="LOT-0001"
+                 aria-label="QR-Code von Hand eingeben">
+          <button class="b b-primary" id="codeGo" type="button">Übernehmen</button>
+        </div>
+        <div class="demo-codes" id="demoCodes"></div>
+      </div>
+    </div>
+
+    <!-- Erscheint erst, wenn etwas gescannt oder ausgewaehlt wurde -->
+    <div class="panel" id="articlePanel" hidden>
+      <div class="panel-head">Artikel</div>
+      <div class="panel-body" id="articleBody"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Letzte Buchungen</div>
+      <div class="tscroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Zeit</th><th scope="col">Artikel</th>
+              <th scope="col">Vorgang</th><th scope="col" class="right">Menge</th>
+              <th scope="col" class="right">Bestand danach</th>
+            </tr>
+          </thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Lager ================= -->
+  <section class="view" id="viewLager" role="tabpanel" aria-labelledby="tabLager" hidden>
+    <div class="head">
+      <div>
+        <h2>Lager</h2>
+        <p>Alle erfassten Artikel mit aktuellem Bestand. Buchen oder direkt für die Bestellung melden.</p>
+      </div>
+      <div class="right">
+        <input id="search" type="search" placeholder="Artikel, Nummer oder Ort suchen"
+               aria-label="Lager durchsuchen" style="min-width:260px">
+      </div>
+    </div>
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Artikel</th><th scope="col">Ort</th><th scope="col">Lieferant</th>
+            <th scope="col" class="right">Bestand</th><th scope="col">Status</th><th scope="col">Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="lagerBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= Bestellen ================= -->
+  <section class="view" id="viewBestellen" role="tabpanel" aria-labelledby="tabBestellen" hidden>
+    <div class="head">
+      <div>
+        <h2>Bestellliste</h2>
+        <p>Was die Werkstatt gemeldet hat — nach Lieferant sortiert. Menge eintragen, Position streichen wenn erledigt.</p>
+      </div>
+    </div>
+
+    <div class="msg" id="orderMsg" role="status" aria-live="polite">
+      <span class="mark" aria-hidden="true"></span>
+      <span><b id="orderMsgTitle"></b><span id="orderMsgText"></span></span>
+    </div>
+
+    <div id="orderList"></div>
+
+    <div class="summary" id="orderSummary" hidden>
+      <div>
+        <b id="sumTitle">0 Positionen</b>
+        <span id="sumSub">bei 0 Lieferanten</span>
+      </div>
+      <button class="b b-primary" id="makeList" type="button">Bestellliste erzeugen</button>
+    </div>
+  </section>
+
+  <div class="foot">
+    <span>Lot 0.1 · Entwurf</span>
+    <span>Beispieldaten, Bestände nur lokal im Browser</span>
+    <button class="b b-secondary b-sm" id="resetBtn" type="button">Bestände zurücksetzen</button>
+  </div>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =====================================================================
+     Artikelstamm
+     code    : Inhalt des QR-Etiketts (eindeutig)
+     ist     : Startbestand
+     schritt : Verpackungseinheit, fuellt die Mengen-Schnelltasten
+     ===================================================================== */
+  var STAMM = [
+    { code:'LOT-0001', name:'Spanplattenschraube 4,0 × 40', einheit:'Stk',
+      lieferant:'Opo Oeschger', lnr:'21.943.40', ort:'Regal A / Fach 2', ist:1450, schritt:100 },
+    { code:'LOT-0002', name:'Spanplattenschraube 4,0 × 60', einheit:'Stk',
+      lieferant:'Opo Oeschger', lnr:'21.943.60', ort:'Regal A / Fach 2', ist:320, schritt:100 },
+    { code:'LOT-0003', name:'Weissleim D3, 5 kg', einheit:'Gebinde',
+      lieferant:'Opo Oeschger', lnr:'44.120.05', ort:'Regal C / unten', ist:4, schritt:1 },
+    { code:'LOT-0004', name:'Topfband 110°, gedämpft', einheit:'Stk',
+      lieferant:'Häfele', lnr:'329.24.502', ort:'Beschlagschrank / Lade 1', ist:46, schritt:10 },
+    { code:'LOT-0005', name:'Schleifscheibe K120, Ø150', einheit:'Stk',
+      lieferant:'Häfele', lnr:'570.11.120', ort:'Schleifplatz / Schublade', ist:12, schritt:10 },
+    { code:'LOT-0006', name:'Kantenumleimer Eiche 22 mm', einheit:'m',
+      lieferant:'Häfele', lnr:'003.44.220', ort:'Regal B / Rolle', ist:85, schritt:25 },
+    { code:'LOT-0007', name:'Holzdübel Buche 8 × 40', einheit:'Stk',
+      lieferant:'Würth', lnr:'0670.840', ort:'Regal A / Fach 4', ist:0, schritt:100 },
+    { code:'LOT-0008', name:'Silikon transparent, Kartusche', einheit:'Stk',
+      lieferant:'Würth', lnr:'0892.201', ort:'Regal C / oben', ist:7, schritt:1 }
+  ];
+
+  var KEY = 'lot.lager.v4';
+  var root = document.documentElement;
+
+  var bestand = {}, gemeldet = {}, mengen = {}, log = [];
+  var ton = true;
+
+  /* ---------- Speicher ---------- */
+  function load() {
+    try { var raw = window.localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; }
+    catch (e) { return null; }
+  }
+  function save() {
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify({
+        ist: bestand, gemeldet: gemeldet, mengen: mengen, log: log, ton: ton
+      }));
+    } catch (e) { /* privater Modus: Zustand bleibt nur fuer diese Sitzung */ }
+  }
+
+  STAMM.forEach(function (a) { bestand[a.code] = a.ist; });
+  var gespeichert = load();
+  if (gespeichert) {
+    STAMM.forEach(function (a) {
+      if (gespeichert.ist && typeof gespeichert.ist[a.code] === 'number') bestand[a.code] = gespeichert.ist[a.code];
+    });
+    gemeldet = gespeichert.gemeldet || {};
+    mengen = gespeichert.mengen || {};
+    log = Array.isArray(gespeichert.log) ? gespeichert.log : [];
+    if (typeof gespeichert.ton === 'boolean') ton = gespeichert.ton;
+  } else {
+    /* Beim ersten Start: was leer ist, gehoert auf die Liste.
+       Danach zaehlt nur noch, was jemand meldet oder streicht. */
+    STAMM.forEach(function (a) { if (a.ist <= 0) gemeldet[a.code] = true; });
+  }
+
+  function artikel(code) {
+    for (var i = 0; i < STAMM.length; i++) if (STAMM[i].code === code) return STAMM[i];
+    return null;
+  }
+  function status(a) {
+    if (bestand[a.code] <= 0) return { key:'err', text:'Leer' };
+    if (gemeldet[a.code]) return { key:'warn', text:'Gemeldet' };
+    return { key:'ok', text:'Im Lager' };
+  }
+  function offeneListe() { return STAMM.filter(function (a) { return !!gemeldet[a.code]; }); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  function uhrzeit() {
+    var d = new Date();
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+
+  /* ---------- Ton: kurzes Signal, weil beim Scannen niemand aufs Display schaut ---- */
+  var actx = null;
+  function piep(art) {
+    if (!ton) return;
+    try {
+      if (!actx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        actx = new AC();
+      }
+      if (actx.state === 'suspended') actx.resume();
+      var folge = art === 'err' ? [[300, 0.22]] : (art === 'warn' ? [[620, 0.09],[520, 0.13]] : [[880, 0.07],[1180, 0.09]]);
+      var t = actx.currentTime;
+      folge.forEach(function (n) {
+        var o = actx.createOscillator(), g = actx.createGain();
+        o.type = 'square'; o.frequency.value = n[0];
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.16, t + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + n[1]);
+        o.connect(g); g.connect(actx.destination);
+        o.start(t); o.stop(t + n[1] + 0.02);
+        t += n[1];
+      });
+    } catch (e) { /* Ton ist Zugabe, nie Voraussetzung */ }
+  }
+
+  var soundBtn = document.getElementById('soundBtn');
+  var soundLabel = document.getElementById('soundLabel');
+  function syncSound() {
+    soundLabel.textContent = ton ? 'Ton an' : 'Ton aus';
+    soundBtn.setAttribute('aria-pressed', ton ? 'true' : 'false');
+    soundBtn.classList.toggle('off', !ton);
+  }
+  soundBtn.addEventListener('click', function () {
+    ton = !ton; syncSound(); save();
+    if (ton) piep('ok');
+  });
+  syncSound();
+
+  /* ---------- Hell / Dunkel ---------- */
+  var themeBtn = document.getElementById('themeBtn');
+  var themeLabel = document.getElementById('themeLabel');
+  function systemDark(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function isDark(){
+    var t = root.getAttribute('data-theme');
+    if (t === 'dark') return true;
+    if (t === 'light') return false;
+    return systemDark();
+  }
+  function syncTheme(){ themeLabel.textContent = isDark() ? 'Hell' : 'Dunkel'; }
+  themeBtn.addEventListener('click', function(){
+    root.setAttribute('data-theme', isDark() ? 'light' : 'dark');
+    syncTheme();
+  });
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+  }
+  syncTheme();
+
+  /* ---------- Meldung in der Bestellliste ---------- */
+  var orderMsg = document.getElementById('orderMsg');
+  function orderSay(kind, title, text) {
+    orderMsg.className = 'msg ' + kind;
+    orderMsg.setAttribute('data-show', '1');
+    document.getElementById('orderMsgTitle').textContent = title;
+    document.getElementById('orderMsgText').textContent = text;
+  }
+  function orderClear() { orderMsg.removeAttribute('data-show'); }
+
+  /* ---------- Grosse Scan-Anzeige ---------- */
+  var stage = document.getElementById('stage');
+  function zeigen(kind, kicker, titel, sub) {
+    stage.className = 'stage ' + (kind || '');
+    document.getElementById('stageKicker').textContent = kicker;
+    document.getElementById('stageTitle').textContent = titel;
+    document.getElementById('stageSub').innerHTML = sub;
+    stage.classList.remove('pulse');
+    void stage.offsetWidth;
+    stage.classList.add('pulse');
+  }
+  function bereit() {
+    zeigen('', 'Bereit', 'Etikett scannen',
+      'Der Scanner am iPad wird wie eine Tastatur gelesen — einfach abdrücken. ' +
+      'Was mit dem Artikel passiert, wählst du danach.');
+  }
+
+  /* =====================================================================
+     Scanner-Empfang.
+     Ein Handscanner am iPad meldet sich als Tastatur: er tippt den Code
+     sehr schnell und schliesst mit Enter (manche mit Tab) ab. Deshalb:
+     global mithoeren, Tempo messen, und nur schnelle Folgen als Scan werten.
+     Handeingabe im Feld bleibt davon unberuehrt.
+     ===================================================================== */
+  var SCAN_MAX_LUECKE = 90;   /* ms zwischen zwei Zeichen, darueber = Mensch */
+  var SCAN_MIN_LAENGE = 3;
+  var DOPPEL_SPERRE  = 1200;  /* ms, in denen derselbe Code nicht zweimal zaehlt */
+
+  var puffer = '';
+  var letzterAnschlag = 0;
+  var pufferTimer = null;
+  var letzterCode = '', letzterCodeZeit = 0;
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    /* Wer in ein Feld tippt, tippt — auch wenn er schnell tippt.
+       Nur das Codefeld nimmt Scans entgegen, sonst wuerde eine flott
+       getippte Suche als Etikett gelesen. */
+    var el = document.activeElement;
+    if (el && el.id !== 'codeInput' &&
+        (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) {
+      puffer = '';
+      return;
+    }
+
+    var jetzt = Date.now();
+    var luecke = jetzt - letzterAnschlag;
+    letzterAnschlag = jetzt;
+
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      if (puffer.length >= SCAN_MIN_LAENGE && luecke < SCAN_MAX_LUECKE) {
+        e.preventDefault();
+        var code = puffer;
+        puffer = '';
+        verarbeiteScan(code);
+      } else {
+        puffer = '';
+      }
+      return;
+    }
+
+    if (e.key.length !== 1) return;
+
+    /* Zu langsam für einen Scanner: das tippt ein Mensch */
+    if (luecke > SCAN_MAX_LUECKE) puffer = '';
+    puffer += e.key;
+
+    if (pufferTimer) clearTimeout(pufferTimer);
+    pufferTimer = setTimeout(function () { puffer = ''; }, 300);
+  }, true);
+
+  function verarbeiteScan(roh) {
+    var code = String(roh).trim().toUpperCase();
+    var jetzt = Date.now();
+    document.getElementById('codeInput').value = '';
+
+    /* Handscanner lesen ein Etikett gern zweimal — die zweite Lesung verwerfen */
+    if (code === letzterCode && (jetzt - letzterCodeZeit) < DOPPEL_SPERRE) {
+      setScannerState('Doppelte Lesung verworfen · ' + code);
+      return;
+    }
+    letzterCode = code; letzterCodeZeit = jetzt;
+    setScannerState('Zuletzt: ' + code);
+
+    var a = artikel(code);
+    if (!a) {
+      piep('err');
+      zeigen('err', 'Unbekannt', 'Dieser Code ist nicht erfasst',
+        'Gescannt: <b>' + esc(code) + '</b> — Artikel zuerst im Lager anlegen.');
+      return;
+    }
+
+    /* Der Scan holt den Artikel hervor — gebucht wird erst,
+       wenn jemand unten Entnehmen, Einlagern oder Melden drückt. */
+    aktuell = a;
+    menge = 1;
+    piep('ok');
+    var st = status(a);
+    zeigen('', 'Erkannt', a.name,
+      'Bestand <b>' + bestand[a.code] + ' ' + esc(a.einheit) + '</b> · ' +
+      esc(a.ort) + ' · ' + st.text);
+    renderArticle();
+  }
+
+  function setScannerState(text) {
+    document.getElementById('scannerState').textContent = text;
+  }
+
+  /* ---------- Buchen (gemeinsam fuer Scan und Handbetrieb) ---------- */
+  function buchen(a, richtung, m) {
+    var alt = bestand[a.code];
+    if (richtung < 0 && m > alt) {
+      return { ok:false, text:'Im Lager stehen nur ' + alt + ' ' + a.einheit + '.' };
+    }
+    bestand[a.code] = alt + richtung * m;
+    protokoll(a, richtung < 0 ? 'Entnahme' : 'Zugang', m);
+    var leer = false;
+    if (bestand[a.code] <= 0 && !gemeldet[a.code]) {
+      melden(a.code, true, true);
+      leer = true;
+    }
+    save();
+    renderBadges();
+    return { ok:true, leer:leer };
+  }
+
+  function melden(code, an, still) {
+    var a = artikel(code);
+    if (!a) return;
+    if (an) {
+      gemeldet[code] = true;
+      if (typeof mengen[code] !== 'number') mengen[code] = 0;
+      protokoll(a, 'Gemeldet', 0);
+    } else {
+      delete gemeldet[code];
+      delete mengen[code];
+      protokoll(a, 'Meldung zurück', 0);
+    }
+    save();
+    renderBadges();
+    if (!still) {
+      if (an) zeigen('warn', 'Gemeldet', a.name, 'Steht jetzt auf der Büroliste.');
+      else zeigen('', 'Zurückgenommen', a.name, 'Von der Büroliste gestrichen.');
+    }
+  }
+
+  function protokoll(a, art, m) {
+    log.unshift({
+      zeit: uhrzeit(), code: a.code, name: a.name,
+      art: art, menge: m, einheit: a.einheit, danach: bestand[a.code]
+    });
+    if (log.length > 12) log.length = 12;
+    renderLog();
+  }
+
+  /* ---------- Reiter ---------- */
+  var TABS = [
+    { tab:'tabScan', view:'viewScan' },
+    { tab:'tabLager', view:'viewLager' },
+    { tab:'tabBestellen', view:'viewBestellen' }
+  ];
+  function showTab(id) {
+    TABS.forEach(function (t) {
+      var on = t.tab === id;
+      document.getElementById(t.tab).setAttribute('aria-selected', on ? 'true' : 'false');
+      document.getElementById(t.view).hidden = !on;
+    });
+    if (id === 'tabLager') renderLager();
+    if (id === 'tabBestellen') renderOrder();
+  }
+  TABS.forEach(function (t) {
+    document.getElementById(t.tab).addEventListener('click', function () { showTab(t.tab); });
+  });
+
+  function renderBadges() {
+    var bl = document.getElementById('badgeLager');
+    bl.textContent = String(STAMM.length);
+    bl.className = 'badge zero';
+    var n = offeneListe().length;
+    var bb = document.getElementById('badgeBestellen');
+    bb.textContent = String(n);
+    bb.className = n > 0 ? 'badge' : 'badge zero';
+  }
+
+  /* ---------- Handeingabe ---------- */
+  var aktuell = null;
+  var menge = 1;
+
+  var demo = document.getElementById('demoCodes');
+  STAMM.slice(0, 4).forEach(function (a) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'demo-code';
+    b.textContent = a.code;
+    b.setAttribute('data-code', a.code);
+    demo.appendChild(b);
+  });
+  demo.addEventListener('click', function (e) {
+    var b = e.target.closest('.demo-code');
+    if (b) verarbeiteScan(b.getAttribute('data-code'));
+  });
+
+  document.getElementById('codeGo').addEventListener('click', function () {
+    uebernehmen();
+  });
+  document.getElementById('codeInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.stopPropagation(); uebernehmen(); }
+  });
+  function uebernehmen() {
+    var f = document.getElementById('codeInput');
+    var code = f.value.trim().toUpperCase();
+    if (!code) {
+      zeigen('warn', 'Kein Code', 'Nichts eingegeben', 'Code eintippen oder scannen.');
+      return;
+    }
+    letzterCode = ''; /* Handeingabe soll nie an der Doppelsperre haengen bleiben */
+    verarbeiteScan(code);
+    f.value = '';
+  }
+
+  /* ---------- Artikelkarte ---------- */
+  function renderArticle() {
+    var box = document.getElementById('articleBody');
+    var panel = document.getElementById('articlePanel');
+    box.innerHTML = '';
+    if (!aktuell) {
+      panel.hidden = true;
+      return;
+    }
+    panel.hidden = false;
+    var a = aktuell, b = bestand[a.code], st = status(a);
+    var an = !!gemeldet[a.code];
+
+    var wrap = document.createElement('div');
+    wrap.className = 'article';
+    wrap.innerHTML =
+      '<div>' +
+        '<p class="name">' + esc(a.name) + '</p>' +
+        '<div class="meta"><span>' + esc(a.code) + '</span><span>' + esc(a.ort) + '</span>' +
+        '<span>' + esc(a.lieferant) + ' · ' + esc(a.lnr) + '</span></div>' +
+      '</div>' +
+      '<div class="stockline">' +
+        '<span class="big">' + b + '</span><span class="unit">' + esc(a.einheit) + '</span>' +
+        '<span class="of">Gebinde ' + a.schritt + ' ' + esc(a.einheit) + '</span>' +
+      '</div>' +
+      '<div><span class="pill ' + st.key + '">' + st.text + '</span></div>' +
+      '<div class="stepper">' +
+        '<button type="button" id="minus" aria-label="Menge verringern">−</button>' +
+        '<input id="qty" type="number" min="1" step="1" value="' + menge + '" aria-label="Menge">' +
+        '<button type="button" id="plus" aria-label="Menge erhöhen">+</button>' +
+      '</div>' +
+      '<div class="chipset" id="qtyChips"></div>' +
+      '<div class="actions">' +
+        '<button class="b b-primary" id="raus" type="button">Entnehmen</button>' +
+        '<button class="b b-secondary" id="rein" type="button">Einlagern</button>' +
+      '</div>' +
+      '<button class="b b-flag' + (an ? ' on' : '') + '" id="flag" type="button">' +
+        (an ? 'Von der Bestellliste nehmen' : 'Muss bestellt werden') +
+      '</button>';
+    box.appendChild(wrap);
+
+    /* Schnellmengen: einzeln, Gebinde, fünf Gebinde */
+    var chips = document.getElementById('qtyChips');
+    var werte = [1, a.schritt, a.schritt * 5], gesehen = {};
+    werte.forEach(function (n) {
+      if (n < 1 || gesehen[n]) return;
+      gesehen[n] = true;
+      var c = document.createElement('button');
+      c.type = 'button'; c.className = 'chip';
+      c.textContent = String(n);
+      c.setAttribute('data-n', n);
+      c.setAttribute('aria-pressed', n === menge ? 'true' : 'false');
+      chips.appendChild(c);
+    });
+    chips.addEventListener('click', function (e) {
+      var c = e.target.closest('.chip');
+      if (!c) return;
+      setMenge(parseInt(c.getAttribute('data-n'), 10));
+      Array.prototype.forEach.call(chips.querySelectorAll('.chip'), function (x) {
+        x.setAttribute('aria-pressed', x === c ? 'true' : 'false');
+      });
+    });
+
+    document.getElementById('minus').addEventListener('click', function(){ setMenge(menge - 1); });
+    document.getElementById('plus').addEventListener('click', function(){ setMenge(menge + 1); });
+    document.getElementById('qty').addEventListener('input', function () {
+      var v = parseInt(this.value, 10);
+      menge = (isNaN(v) || v < 1) ? 1 : v;
+    });
+    document.getElementById('raus').addEventListener('click', function(){ handBuchen(-1); });
+    document.getElementById('rein').addEventListener('click', function(){ handBuchen(1); });
+    document.getElementById('flag').addEventListener('click', function () {
+      melden(a.code, !gemeldet[a.code]);
+      renderArticle();
+    });
+  }
+
+  function setMenge(v) {
+    menge = v < 1 ? 1 : Math.round(v);
+    var f = document.getElementById('qty');
+    if (f) f.value = menge;
+  }
+
+  function handBuchen(richtung) {
+    if (!aktuell) return;
+    var a = aktuell;
+    var r = buchen(a, richtung, menge);
+    if (!r.ok) {
+      piep('err');
+      zeigen('err', 'Nicht gebucht', a.name, r.text);
+    } else if (r.leer) {
+      piep('warn');
+      zeigen('warn', 'Lager leer', a.name, 'Bestand <b>0</b> — automatisch für die Bestellung gemeldet.');
+    } else {
+      piep('ok');
+      zeigen('ok', richtung < 0 ? 'Entnommen' : 'Eingelagert', a.name,
+        (richtung < 0 ? '−' : '+') + '<b>' + menge + ' ' + esc(a.einheit) + '</b>' +
+        ' · Bestand jetzt <b>' + bestand[a.code] + '</b>');
+    }
+    menge = 1;
+    renderArticle();
+  }
+
+  /* ---------- Protokoll ---------- */
+  function renderLog() {
+    var tb = document.getElementById('logBody');
+    tb.innerHTML = '';
+    if (!log.length) {
+      tb.innerHTML = '<tr><td colspan="5"><div class="empty">' +
+        '<b>Noch nichts gebucht</b><span>Buchungen der letzten Zeit stehen hier.</span></div></td></tr>';
+      return;
+    }
+    log.forEach(function (e) {
+      var art = e.art;
+      var kind = art === 'Entnahme' ? 'info' : (art === 'Zugang' ? 'ok' : (art === 'Gemeldet' ? 'warn' : 'info'));
+      var m = e.menge > 0
+        ? (art === 'Entnahme' ? '−' : '+') + e.menge + ' ' + esc(e.einheit)
+        : '—';
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="num">' + esc(e.zeit) + '</td>' +
+        '<td class="strong">' + esc(e.name) + '<span class="sub">' + esc(e.code) + '</span></td>' +
+        '<td><span class="pill ' + kind + '">' + esc(art) + '</span></td>' +
+        '<td class="num right">' + m + '</td>' +
+        '<td class="num right">' + e.danach + '</td>';
+      tb.appendChild(tr);
+    });
+  }
+
+  /* ---------- Lager ---------- */
+  document.getElementById('search').addEventListener('input', renderLager);
+
+  function renderLager() {
+    var q = document.getElementById('search').value.trim().toLowerCase();
+    var tb = document.getElementById('lagerBody');
+    tb.innerHTML = '';
+    var liste = STAMM.filter(function (a) {
+      if (!q) return true;
+      return (a.name + ' ' + a.code + ' ' + a.ort + ' ' + a.lieferant + ' ' + a.lnr)
+             .toLowerCase().indexOf(q) !== -1;
+    });
+    if (!liste.length) {
+      tb.innerHTML = '<tr><td colspan="6"><div class="empty">' +
+        '<b>Nichts gefunden</b><span>Andere Suche versuchen.</span></div></td></tr>';
+      return;
+    }
+    liste.forEach(function (a) {
+      var st = status(a), an = !!gemeldet[a.code];
+      var tr = document.createElement('tr');
+      if (an) tr.className = 'flagged';
+      tr.innerHTML =
+        '<td class="strong">' + esc(a.name) + '<span class="sub">' + esc(a.code) + '</span></td>' +
+        '<td>' + esc(a.ort) + '</td>' +
+        '<td>' + esc(a.lieferant) + '<span class="sub">' + esc(a.lnr) + '</span></td>' +
+        '<td class="num right strong">' + bestand[a.code] + ' ' + esc(a.einheit) + '</td>' +
+        '<td><span class="pill ' + st.key + '">' + st.text + '</span></td>' +
+        '<td><div class="cellbtns">' +
+          '<button class="b b-secondary b-sm" data-act="buchen" data-code="' + a.code + '">Buchen</button>' +
+          '<button class="b b-secondary b-sm" data-act="melden" data-code="' + a.code + '">' +
+            (an ? 'Meldung zurück' : 'Melden') + '</button>' +
+        '</div></td>';
+      tb.appendChild(tr);
+    });
+  }
+
+  document.getElementById('lagerBody').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    var code = btn.getAttribute('data-code');
+    if (btn.getAttribute('data-act') === 'buchen') {
+      aktuell = artikel(code);
+      menge = 1;
+      renderArticle();
+      showTab('tabScan');
+      var st = status(aktuell);
+      zeigen('', 'Ausgewählt', aktuell.name,
+        'Bestand <b>' + bestand[code] + ' ' + esc(aktuell.einheit) + '</b> · ' + st.text);
+    } else {
+      melden(code, !gemeldet[code], true);
+      renderLager();
+      if (aktuell && aktuell.code === code) renderArticle();
+    }
+  });
+
+  /* ---------- Bestellliste ---------- */
+  function renderOrder() {
+    var box = document.getElementById('orderList');
+    box.innerHTML = '';
+    var offen = offeneListe();
+
+    if (!offen.length) {
+      box.innerHTML = '<div class="panel"><div class="panel-body"><div class="empty">' +
+        '<b>Nichts zu bestellen</b>' +
+        '<span>Sobald jemand in der Werkstatt einen Artikel meldet, steht er hier.</span>' +
+        '</div></div></div>';
+      document.getElementById('orderSummary').hidden = true;
+      orderClear();
+      return;
+    }
+
+    var nachLieferant = {};
+    offen.forEach(function (a) {
+      if (!nachLieferant[a.lieferant]) nachLieferant[a.lieferant] = [];
+      nachLieferant[a.lieferant].push(a);
+    });
+
+    Object.keys(nachLieferant).forEach(function (lief) {
+      var group = document.createElement('div');
+      group.className = 'supplier';
+      var head = document.createElement('div');
+      head.className = 'sup-head';
+      head.innerHTML = '<h4>' + esc(lief) + '</h4>' +
+        '<span class="cnt">' + nachLieferant[lief].length + ' Positionen</span>';
+      group.appendChild(head);
+
+      var body = document.createElement('div');
+      body.className = 'sup-body';
+      nachLieferant[lief].forEach(function (a) {
+        var line = document.createElement('div');
+        line.className = 'line';
+        line.setAttribute('data-code', a.code);
+        line.innerHTML =
+          '<div class="t"><b>' + esc(a.name) + '</b>' +
+            '<span>' + esc(a.lnr) + ' · ' + esc(a.ort) + '</span></div>' +
+          '<div class="have">Bestand ' + bestand[a.code] + ' ' + esc(a.einheit) + '</div>' +
+          '<div class="qty">' +
+            '<input type="number" min="0" step="' + a.schritt + '" placeholder="Menge"' +
+            ' value="' + (mengen[a.code] ? mengen[a.code] : '') + '"' +
+            ' aria-label="Bestellmenge ' + esc(a.name) + '">' +
+            '<span>' + esc(a.einheit) + '</span>' +
+          '</div>' +
+          '<button class="b b-secondary b-sm" data-act="weg" data-code="' + a.code + '">Streichen</button>';
+        body.appendChild(line);
+      });
+      group.appendChild(body);
+      box.appendChild(group);
+    });
+
+    document.getElementById('orderSummary').hidden = false;
+    renderSummary();
+  }
+
+  /* einmalig registriert, nicht bei jedem Rendern erneut */
+  document.getElementById('orderList').addEventListener('input', function (e) {
+    if (e.target.type !== 'number') return;
+    var line = e.target.closest('.line');
+    if (!line) return;
+    var v = parseInt(e.target.value, 10);
+    mengen[line.getAttribute('data-code')] = (isNaN(v) || v < 0) ? 0 : v;
+    save();
+    renderSummary();
+  });
+  document.getElementById('orderList').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act="weg"]');
+    if (!btn) return;
+    melden(btn.getAttribute('data-code'), false, true);
+    renderOrder();
+    if (aktuell) renderArticle();
+  });
+
+  function renderSummary() {
+    var offen = offeneListe(), liefs = {};
+    offen.forEach(function (a) { liefs[a.lieferant] = true; });
+    var n = Object.keys(liefs).length;
+    document.getElementById('sumTitle').textContent =
+      offen.length === 1 ? '1 Position' : offen.length + ' Positionen';
+    document.getElementById('sumSub').textContent = 'bei ' + n + (n === 1 ? ' Lieferant' : ' Lieferanten');
+    document.getElementById('makeList').disabled = offen.length === 0;
+  }
+
+  document.getElementById('makeList').addEventListener('click', function () {
+    var offen = offeneListe();
+    if (!offen.length) return;
+    var ohne = offen.filter(function (a) { return !mengen[a.code]; });
+    var liefs = {};
+    offen.forEach(function (a) { liefs[a.lieferant] = (liefs[a.lieferant] || 0) + 1; });
+    var teile = Object.keys(liefs).map(function (l) { return l + ' (' + liefs[l] + ')'; });
+    if (ohne.length) {
+      orderSay('warn', 'Mengen fehlen. ',
+        ohne.length + ' von ' + offen.length + ' Positionen haben noch keine Menge — zuerst eintragen.');
+      return;
+    }
+    orderSay('info', 'Liste steht bereit. ',
+      offen.length + ' Positionen für ' + teile.join(', ') +
+      '. Versand an die Lieferanten kommt, sobald die Schnittstelle steht.');
+  });
+
+  /* ---------- Zuruecksetzen ---------- */
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    STAMM.forEach(function (a) { bestand[a.code] = a.ist; });
+    gemeldet = {}; mengen = {}; log = [];
+    STAMM.forEach(function (a) { if (a.ist <= 0) gemeldet[a.code] = true; });
+    aktuell = null; menge = 1; letzterCode = '';
+    save();
+    renderArticle(); renderLog(); renderLager(); renderOrder(); renderBadges();
+    setScannerState('Scanner bereit');
+    zeigen('', 'Zurückgesetzt', 'Alles auf Anfang', 'Bestände, Meldungen und Protokoll stehen wieder am Start.');
+  });
+
+  /* ---------- Start ---------- */
+  renderArticle();
+  renderLog();
+  renderLager();
+  renderBadges();
+  showTab('tabScan');
+  bereit();
+})();
+</script>
