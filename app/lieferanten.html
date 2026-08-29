@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lot — Lieferanten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* =========================================================================
+   Lot — Lieferanten erfassen
+   Tokens identisch zu design/tokens.css (inline, damit die Seite allein laeuft)
+   ========================================================================= */
+:root{
+  --raw-o-50:#FFF4ED; --raw-o-100:#FFE4D3; --raw-o-200:#FFC5A3; --raw-o-300:#FFA96F;
+  --raw-o-400:#FF8A3D; --raw-o-500:#F26419; --raw-o-600:#D2500C; --raw-o-700:#A93C08;
+  --raw-o-800:#7C2C07; --raw-o-900:#4E1C05;
+  --raw-n-0:#FFFFFF; --raw-n-25:#FCFAF8; --raw-n-50:#FAF7F4; --raw-n-100:#F2EDE8;
+  --raw-n-200:#E4DCD4; --raw-n-300:#CDC3B9; --raw-n-400:#A79C91; --raw-n-500:#7E746A;
+  --raw-n-600:#5C554E; --raw-n-700:#423C36; --raw-n-800:#26211D; --raw-n-900:#171310;
+  --raw-n-950:#100D0B;
+  --raw-p-400:#4EB3B8; --raw-p-700:#0E5257; --raw-p-50:#E9F4F4;
+  --raw-ok-500:#1F7A4D; --raw-ok-400:#4FBF87; --raw-ok-50:#E7F4EC;
+  --raw-warn-700:#8A5A00; --raw-warn-400:#F5B301; --raw-warn-50:#FDF3DC;
+  --raw-err-600:#B3261E; --raw-err-400:#FF6B60; --raw-err-50:#FCEAE8;
+  --raw-info-600:#1A5F9E; --raw-info-400:#5FAEE8; --raw-info-50:#E8F1FA;
+}
+:root{
+  color-scheme:light;
+  --bg-app:var(--raw-n-50); --bg-surface:var(--raw-n-0); --bg-raised:var(--raw-n-25);
+  --bg-sunken:var(--raw-n-100);
+  --text-strong:var(--raw-n-900); --text-base:var(--raw-n-700);
+  --text-muted:var(--raw-n-600); --text-faint:var(--raw-n-500);
+  --text-on-brand:var(--raw-n-900);
+  --border-subtle:var(--raw-n-200); --border-base:var(--raw-n-300); --border-strong:var(--raw-n-400);
+  --brand:var(--raw-o-500); --brand-hover:var(--raw-o-600); --brand-active:var(--raw-o-700);
+  --brand-text:var(--raw-o-700); --brand-quiet:var(--raw-o-50); --brand-quiet-bd:var(--raw-o-200);
+  --focus-ring:var(--raw-o-600);
+  --ok-text:var(--raw-ok-500); --ok-bg:var(--raw-ok-50); --ok-bd:#A8D8BC;
+  --warn-text:var(--raw-warn-700); --warn-bg:var(--raw-warn-50); --warn-bd:#E8C777;
+  --err-text:var(--raw-err-600); --err-bg:var(--raw-err-50); --err-bd:#EFA9A3;
+  --info-text:var(--raw-info-600); --info-bg:var(--raw-info-50); --info-bd:#A9C9E6;
+  --shadow-1:0 1px 2px rgba(35,25,18,.07),0 1px 1px rgba(35,25,18,.04);
+  --shadow-2:0 2px 6px rgba(35,25,18,.09),0 8px 20px rgba(35,25,18,.06);
+  --r-sm:4px; --r-md:8px; --r-lg:12px; --r-pill:999px;
+  --touch-min:44px; --touch-comfort:56px;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,monospace;
+  --topbar-bg:var(--raw-n-900); --topbar-text:var(--raw-n-100); --topbar-muted:var(--raw-n-400);
+  --topbar-line:#332C26;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-raised:var(--raw-n-800);
+    --bg-sunken:#0A0806;
+    --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+    --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+    --text-on-brand:var(--raw-n-950);
+    --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+    --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+    --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+    --focus-ring:var(--raw-o-400);
+    --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+    --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+    --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+    --info-text:var(--raw-info-400); --info-bg:#0D2135; --info-bd:#22496E;
+    --shadow-1:0 1px 2px rgba(0,0,0,.5);
+    --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
+    --topbar-bg:#0B0908; --topbar-line:#241F1B;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-raised:var(--raw-n-800);
+  --bg-sunken:#0A0806;
+  --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+  --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+  --text-on-brand:var(--raw-n-950);
+  --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+  --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+  --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+  --focus-ring:var(--raw-o-400);
+  --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+  --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+  --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+  --info-text:var(--raw-info-400); --info-bg:#0D2135; --info-bd:#22496E;
+  --shadow-1:0 1px 2px rgba(0,0,0,.5);
+  --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
+  --topbar-bg:#0B0908; --topbar-line:#241F1B;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg-app); color:var(--text-base);
+  font:400 16px/1.6 var(--f-body); -webkit-font-smoothing:antialiased;
+}
+
+/* Kopfleiste */
+.topbar{
+  background:var(--topbar-bg); color:var(--topbar-text);
+  border-bottom:1px solid var(--topbar-line);
+  padding:12px 20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.brand{display:flex; align-items:baseline; gap:10px; margin-right:auto}
+.brand b{font:700 21px/1 var(--f-display); letter-spacing:.02em}
+.brand b span{color:var(--brand)}
+.brand em{
+  font:500 12px/1 var(--f-mono); font-style:normal; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--topbar-muted);
+  border-left:1px solid var(--topbar-line); padding-left:10px;
+}
+.ghost{
+  min-height:var(--touch-min); padding:0 13px;
+  display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+  background:transparent; color:var(--topbar-muted);
+  border:1px solid var(--topbar-line); border-radius:var(--r-pill);
+  font:500 13px/1 var(--f-body); cursor:pointer;
+}
+.ghost:hover{color:var(--topbar-text); border-color:var(--topbar-muted)}
+.ghost .dot{width:9px; height:9px; border-radius:50%; background:var(--brand)}
+
+/* Layout */
+.page{max-width:1000px; margin:0 auto; padding:24px 20px 72px}
+.head{display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap; margin-bottom:18px}
+.head h2{margin:0; font:600 21px/1.2 var(--f-display); color:var(--text-strong); letter-spacing:-.01em}
+.head .right{margin-left:auto; display:flex; gap:10px; flex-wrap:wrap}
+
+.panel{
+  background:var(--bg-surface); border:1px solid var(--border-subtle);
+  border-radius:var(--r-lg); box-shadow:var(--shadow-1); margin-bottom:18px;
+}
+.panel-head{
+  padding:13px 16px; border-bottom:1px solid var(--border-subtle);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  font:600 11px/1 var(--f-mono); letter-spacing:.1em; text-transform:uppercase;
+  color:var(--text-muted);
+}
+.panel-body{padding:16px; display:flex; flex-direction:column; gap:16px}
+
+/* Formular */
+.rows{display:grid; grid-template-columns:repeat(auto-fit,minmax(232px,1fr)); gap:14px}
+.field{display:flex; flex-direction:column; gap:7px}
+.field.wide{grid-column:1/-1}
+.field label{
+  font:500 12px/1 var(--f-mono); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted);
+}
+.field .note{font:400 12px/1.4 var(--f-body); color:var(--text-faint)}
+input[type="text"],input[type="email"],input[type="tel"],input[type="url"],input[type="search"],textarea{
+  width:100%; min-height:var(--touch-comfort); padding:11px 14px;
+  background:var(--bg-sunken); color:var(--text-strong);
+  border:1px solid var(--border-base); border-radius:var(--r-md);
+  font:400 16px/1.4 var(--f-body);
+}
+textarea{min-height:88px; resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--text-faint)}
+input:hover,textarea:hover{border-color:var(--border-strong)}
+input:focus,textarea:focus{background:var(--bg-surface)}
+
+.b{
+  min-height:var(--touch-comfort); padding:0 20px; border-radius:var(--r-md);
+  border:1px solid transparent; cursor:pointer; font:600 16px/1 var(--f-body);
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  text-decoration:none;
+}
+.b-primary{background:var(--brand); color:var(--text-on-brand)}
+.b-primary:hover{background:var(--brand-hover)}
+.b-primary:active{background:var(--brand-active); color:#fff}
+.b-secondary{background:var(--bg-surface); color:var(--text-strong); border-color:var(--border-base)}
+.b-secondary:hover{background:var(--bg-sunken); border-color:var(--border-strong)}
+.b-sm{min-height:var(--touch-min); padding:0 14px; font-size:14px}
+.b-danger{background:transparent; color:var(--err-text); border-color:var(--err-bd)}
+.b-danger:hover{background:var(--err-bg)}
+.b[disabled]{background:var(--bg-sunken); color:var(--text-faint); border-color:var(--border-subtle); cursor:not-allowed}
+.formbtns{display:flex; gap:10px; flex-wrap:wrap}
+
+/* Liste */
+.list{display:flex; flex-direction:column}
+.item{
+  display:grid; grid-template-columns:minmax(0,1fr) auto;
+  gap:12px; align-items:start; padding:14px 16px;
+  border-bottom:1px solid var(--border-subtle);
+}
+.item:last-child{border-bottom:0}
+.item.editing{background:var(--brand-quiet); box-shadow:inset 3px 0 0 var(--brand)}
+.item .t{min-width:0}
+.item .t b{display:block; font:600 17px/1.3 var(--f-display); color:var(--text-strong)}
+.kv{
+  display:flex; flex-wrap:wrap; gap:3px 16px; margin-top:5px;
+  font:400 13px/1.55 var(--f-mono); color:var(--text-faint);
+}
+.kv span{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%}
+.kv a{color:var(--brand-text); text-decoration:none}
+.kv a:hover{text-decoration:underline}
+.item .notiz{
+  margin:8px 0 0; padding:8px 11px; border-radius:var(--r-sm);
+  background:var(--bg-sunken); border:1px solid var(--border-subtle);
+  font-size:13px; line-height:1.5; color:var(--text-muted);
+}
+.itembtns{display:flex; gap:7px; flex-wrap:wrap}
+.leer{font:400 13px/1.5 var(--f-mono); color:var(--text-faint)}
+
+.msg{
+  display:none; gap:10px; align-items:flex-start;
+  padding:12px 14px; border-radius:var(--r-md); border:1px solid;
+  font-size:14px; line-height:1.5; margin-bottom:18px;
+}
+.msg[data-show="1"]{display:flex}
+.msg.ok{color:var(--ok-text); background:var(--ok-bg); border-color:var(--ok-bd)}
+.msg.warn{color:var(--warn-text); background:var(--warn-bg); border-color:var(--warn-bd)}
+.msg.err{color:var(--err-text); background:var(--err-bg); border-color:var(--err-bd)}
+.msg .mark{flex:none; width:9px; height:9px; border-radius:50%; background:currentColor; margin-top:7px}
+.msg b{display:block; font-weight:600}
+
+.empty{
+  padding:34px 20px; text-align:center; color:var(--text-faint);
+  display:flex; flex-direction:column; gap:8px; align-items:center;
+}
+.empty b{color:var(--text-muted); font:600 16px/1.3 var(--f-body)}
+
+.foot{
+  margin-top:24px; padding-top:14px; border-top:1px solid var(--border-subtle);
+  font:400 12px/1.6 var(--f-mono); color:var(--text-faint);
+  display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center;
+}
+
+:where(a,button,input,textarea,[tabindex]):focus-visible{
+  outline:3px solid var(--focus-ring); outline-offset:2px; border-radius:var(--r-sm);
+}
+@media (max-width:640px){
+  .item{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
+}
+</style>
+
+<header class="topbar">
+  <div class="brand"><b>LO<span>T</span></b><em>Lieferanten</em></div>
+  <a class="ghost" href="bestellung.html">Zurück zur Bestellung</a>
+  <button class="ghost" id="themeBtn" type="button">
+    <span class="dot" aria-hidden="true"></span><span id="themeLabel">Dunkel</span>
+  </button>
+</header>
+
+<main class="page">
+
+  <div class="head">
+    <div>
+      <h2>Lieferanten</h2>
+    </div>
+    <div class="right">
+      <input id="search" type="search" placeholder="Lieferant suchen"
+             aria-label="Lieferanten durchsuchen" style="min-width:240px">
+      <button class="b b-primary" id="newBtn" type="button">Neuer Lieferant</button>
+    </div>
+  </div>
+
+  <div class="msg" id="msg" role="status" aria-live="polite">
+    <span class="mark" aria-hidden="true"></span>
+    <span><b id="msgTitle"></b><span id="msgText"></span></span>
+  </div>
+
+  <!-- Erscheint erst, wenn erfasst oder bearbeitet wird -->
+  <div class="panel" id="formPanel" hidden>
+    <div class="panel-head" id="formHead">Neuer Lieferant</div>
+    <div class="panel-body">
+      <div class="rows">
+        <div class="field wide">
+          <label for="fName">Name</label>
+          <input id="fName" type="text" autocomplete="off" placeholder="z. B. Opo Oeschger">
+        </div>
+        <div class="field">
+          <label for="fKunde">Unsere Kundennummer</label>
+          <input id="fKunde" type="text" autocomplete="off" inputmode="text">
+          <span class="note">Die Nummer, unter der wir dort geführt werden.</span>
+        </div>
+        <div class="field">
+          <label for="fPerson">Ansprechperson</label>
+          <input id="fPerson" type="text" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="fMail">Bestell-E-Mail</label>
+          <input id="fMail" type="email" autocomplete="off" inputmode="email"
+                 placeholder="bestellung@lieferant.ch">
+        </div>
+        <div class="field">
+          <label for="fTel">Telefon</label>
+          <input id="fTel" type="tel" autocomplete="off" inputmode="tel">
+        </div>
+        <div class="field wide">
+          <label for="fShop">Webshop</label>
+          <input id="fShop" type="url" autocomplete="off" inputmode="url"
+                 placeholder="https://">
+        </div>
+        <div class="field wide">
+          <label for="fNotiz">Notiz</label>
+          <textarea id="fNotiz" placeholder="Lieferrhythmus, Konditionen, was man wissen muss"></textarea>
+        </div>
+      </div>
+      <div class="formbtns">
+        <button class="b b-primary" id="saveBtn" type="button">Speichern</button>
+        <button class="b b-secondary" id="cancelBtn" type="button">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">Erfasst <span id="count" style="margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+    <div class="list" id="list"></div>
+  </div>
+
+  <div class="foot">
+    <span>Lot 0.1 · Entwurf</span>
+    <span>Nur lokal im Browser gespeichert</span>
+  </div>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var KEY = 'lot.lieferanten.v1';
+  var root = document.documentElement;
+
+  /* Startbestand: die Namen, die im Artikelstamm schon vorkommen.
+     Kontaktangaben bewusst leer — die trägt Ricardo selbst ein. */
+  var START = [
+    { id:'l1', name:'Opo Oeschger', kunde:'', person:'', mail:'', tel:'', shop:'', notiz:'' },
+    { id:'l2', name:'Häfele',       kunde:'', person:'', mail:'', tel:'', shop:'', notiz:'' },
+    { id:'l3', name:'Würth',        kunde:'', person:'', mail:'', tel:'', shop:'', notiz:'' }
+  ];
+
+  var liste = [];
+  var bearbeitet = null;   /* id des Lieferanten im Formular, null = neu */
+  var loeschKandidat = null;
+
+  function load() {
+    try { var raw = window.localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; }
+    catch (e) { return null; }
+  }
+  function save() {
+    try { window.localStorage.setItem(KEY, JSON.stringify(liste)); }
+    catch (e) { /* privater Modus: bleibt nur fuer diese Sitzung */ }
+  }
+  var gespeichert = load();
+  liste = Array.isArray(gespeichert) ? gespeichert : START.slice();
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  function neueId() {
+    var n = 1;
+    while (liste.some(function (x) { return x.id === 'l' + n; })) n++;
+    return 'l' + n;
+  }
+
+  /* ---------- Hell / Dunkel ---------- */
+  var themeBtn = document.getElementById('themeBtn');
+  var themeLabel = document.getElementById('themeLabel');
+  function systemDark(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function isDark(){
+    var t = root.getAttribute('data-theme');
+    if (t === 'dark') return true;
+    if (t === 'light') return false;
+    return systemDark();
+  }
+  function syncTheme(){ themeLabel.textContent = isDark() ? 'Hell' : 'Dunkel'; }
+  themeBtn.addEventListener('click', function(){
+    root.setAttribute('data-theme', isDark() ? 'light' : 'dark');
+    syncTheme();
+  });
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+  }
+  syncTheme();
+
+  /* ---------- Meldungen ---------- */
+  var msg = document.getElementById('msg');
+  function say(kind, title, text) {
+    msg.className = 'msg ' + kind;
+    msg.setAttribute('data-show', '1');
+    document.getElementById('msgTitle').textContent = title;
+    document.getElementById('msgText').textContent = text;
+  }
+  function clearMsg() { msg.removeAttribute('data-show'); }
+
+  /* ---------- Formular ---------- */
+  var F = {
+    name: document.getElementById('fName'),
+    kunde: document.getElementById('fKunde'),
+    person: document.getElementById('fPerson'),
+    mail: document.getElementById('fMail'),
+    tel: document.getElementById('fTel'),
+    shop: document.getElementById('fShop'),
+    notiz: document.getElementById('fNotiz')
+  };
+  var formPanel = document.getElementById('formPanel');
+
+  function formOeffnen(id) {
+    bearbeitet = id || null;
+    loeschKandidat = null;
+    var l = id ? finde(id) : null;
+    document.getElementById('formHead').textContent = l ? 'Lieferant bearbeiten' : 'Neuer Lieferant';
+    F.name.value   = l ? l.name   : '';
+    F.kunde.value  = l ? l.kunde  : '';
+    F.person.value = l ? l.person : '';
+    F.mail.value   = l ? l.mail   : '';
+    F.tel.value    = l ? l.tel    : '';
+    F.shop.value   = l ? l.shop   : '';
+    F.notiz.value  = l ? l.notiz  : '';
+    formPanel.hidden = false;
+    clearMsg();
+    render();
+    F.name.focus();
+  }
+  function formSchliessen() {
+    formPanel.hidden = true;
+    bearbeitet = null;
+    render();
+  }
+  function finde(id) {
+    for (var i = 0; i < liste.length; i++) if (liste[i].id === id) return liste[i];
+    return null;
+  }
+
+  document.getElementById('newBtn').addEventListener('click', function(){ formOeffnen(null); });
+  document.getElementById('cancelBtn').addEventListener('click', formSchliessen);
+
+  document.getElementById('saveBtn').addEventListener('click', function () {
+    var name = F.name.value.trim();
+    if (!name) {
+      say('err', 'Name fehlt. ', 'Ohne Namen lässt sich der Lieferant nicht zuordnen.');
+      F.name.focus();
+      return;
+    }
+    var doppelt = liste.some(function (x) {
+      return x.id !== bearbeitet && x.name.toLowerCase() === name.toLowerCase();
+    });
+    if (doppelt) {
+      say('err', 'Gibt es schon. ', name + ' ist bereits erfasst.');
+      F.name.focus();
+      return;
+    }
+    var mail = F.mail.value.trim();
+    if (mail && mail.indexOf('@') === -1) {
+      say('err', 'E-Mail unvollständig. ', 'Die Adresse braucht ein @ — oder lass das Feld leer.');
+      F.mail.focus();
+      return;
+    }
+    var daten = {
+      name: name,
+      kunde: F.kunde.value.trim(),
+      person: F.person.value.trim(),
+      mail: mail,
+      tel: F.tel.value.trim(),
+      shop: F.shop.value.trim(),
+      notiz: F.notiz.value.trim()
+    };
+    if (bearbeitet) {
+      var l = finde(bearbeitet);
+      for (var k in daten) if (Object.prototype.hasOwnProperty.call(daten, k)) l[k] = daten[k];
+      say('ok', 'Gespeichert. ', name + ' wurde geändert.');
+    } else {
+      daten.id = neueId();
+      liste.push(daten);
+      say('ok', 'Erfasst. ', name + ' steht jetzt in der Liste.');
+    }
+    save();
+    formSchliessen();
+  });
+
+  /* ---------- Liste ---------- */
+  document.getElementById('search').addEventListener('input', render);
+
+  function render() {
+    var q = document.getElementById('search').value.trim().toLowerCase();
+    var box = document.getElementById('list');
+    box.innerHTML = '';
+
+    var sortiert = liste.slice().sort(function (a, b) {
+      return a.name.localeCompare(b.name, 'de');
+    });
+    var gefiltert = sortiert.filter(function (l) {
+      if (!q) return true;
+      return (l.name + ' ' + l.kunde + ' ' + l.person + ' ' + l.mail + ' ' + l.notiz)
+             .toLowerCase().indexOf(q) !== -1;
+    });
+
+    document.getElementById('count').textContent =
+      liste.length === 1 ? '1 Lieferant' : liste.length + ' Lieferanten';
+
+    if (!liste.length) {
+      box.innerHTML = '<div class="empty"><b>Noch keine Lieferanten</b>' +
+        '<span>Oben auf „Neuer Lieferant" tippen.</span></div>';
+      return;
+    }
+    if (!gefiltert.length) {
+      box.innerHTML = '<div class="empty"><b>Nichts gefunden</b>' +
+        '<span>Andere Suche versuchen.</span></div>';
+      return;
+    }
+
+    gefiltert.forEach(function (l) {
+      var teile = [];
+      if (l.kunde)  teile.push('<span>Kd.-Nr. ' + esc(l.kunde) + '</span>');
+      if (l.person) teile.push('<span>' + esc(l.person) + '</span>');
+      if (l.mail)   teile.push('<span><a href="mailto:' + esc(l.mail) + '">' + esc(l.mail) + '</a></span>');
+      if (l.tel)    teile.push('<span><a href="tel:' + esc(l.tel.replace(/\s/g,'')) + '">' + esc(l.tel) + '</a></span>');
+      if (l.shop)   teile.push('<span><a href="' + esc(l.shop) + '" target="_blank" rel="noopener noreferrer">Webshop</a></span>');
+
+      var row = document.createElement('div');
+      row.className = 'item' + (bearbeitet === l.id ? ' editing' : '');
+      row.innerHTML =
+        '<div class="t">' +
+          '<b>' + esc(l.name) + '</b>' +
+          (teile.length
+            ? '<div class="kv">' + teile.join('') + '</div>'
+            : '<div class="kv"><span class="leer">Noch keine Angaben erfasst</span></div>') +
+          (l.notiz ? '<p class="notiz">' + esc(l.notiz) + '</p>' : '') +
+        '</div>' +
+        '<div class="itembtns">' +
+          '<button class="b b-secondary b-sm" data-act="edit" data-id="' + l.id + '">Bearbeiten</button>' +
+          '<button class="b b-danger b-sm" data-act="del" data-id="' + l.id + '">' +
+            (loeschKandidat === l.id ? 'Wirklich löschen?' : 'Löschen') +
+          '</button>' +
+        '</div>';
+      box.appendChild(row);
+    });
+  }
+
+  document.getElementById('list').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    var id = btn.getAttribute('data-id');
+    if (btn.getAttribute('data-act') === 'edit') {
+      formOeffnen(id);
+      return;
+    }
+    /* Löschen: erster Klick fragt, zweiter führt aus */
+    if (loeschKandidat !== id) {
+      loeschKandidat = id;
+      say('warn', 'Sicher? ', 'Nochmal auf „Wirklich löschen?" tippen, dann ist ' +
+        finde(id).name + ' weg. Ein Klick woanders bricht ab.');
+      render();
+      return;
+    }
+    var name = finde(id).name;
+    liste = liste.filter(function (x) { return x.id !== id; });
+    loeschKandidat = null;
+    if (bearbeitet === id) formSchliessen();
+    save();
+    say('ok', 'Gelöscht. ', name + ' ist aus der Liste entfernt.');
+    render();
+  });
+
+  /* Klick ausserhalb bricht das Löschen ab */
+  document.addEventListener('click', function (e) {
+    if (!loeschKandidat) return;
+    if (e.target.closest('button[data-act="del"]')) return;
+    loeschKandidat = null;
+    clearMsg();
+    render();
+  });
+
+  render();
+})();
+</script>

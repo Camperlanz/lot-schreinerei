@@ -123,7 +123,7 @@ body{
 }
 .ghost{
   min-height:var(--touch-min); padding:0 13px;
-  display:inline-flex; align-items:center; gap:8px;
+  display:inline-flex; align-items:center; gap:8px; text-decoration:none;
   background:transparent; color:var(--topbar-muted);
   border:1px solid var(--topbar-line); border-radius:var(--r-pill);
   font:500 13px/1 var(--f-body); cursor:pointer;
@@ -417,6 +417,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
 <header class="topbar">
   <div class="brand"><b>LO<span>T</span></b><em>Bestellung</em></div>
   <div class="who"><i aria-hidden="true">RS</i><span>Ricardo</span></div>
+  <a class="ghost" href="lieferanten.html">Lieferanten</a>
   <button class="ghost" id="soundBtn" type="button" aria-pressed="true">
     <span class="dot" aria-hidden="true"></span><span id="soundLabel">Ton an</span>
   </button>
