@@ -442,7 +442,6 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     <div class="head">
       <div>
         <h2>Scannen</h2>
-        <p>Etikett scannen, dann entscheiden — der Scanner muss nirgends hineinklicken, die App hört immer mit.</p>
       </div>
     </div>
 
@@ -451,7 +450,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       <div class="stage-text">
         <p class="stage-kicker" id="stageKicker">Bereit</p>
         <h3 class="stage-title" id="stageTitle">Etikett scannen</h3>
-        <p class="stage-sub" id="stageSub">Der Scanner am iPad wird wie eine Tastatur gelesen — einfach abdrücken.</p>
+        <p class="stage-sub" id="stageSub" hidden></p>
       </div>
     </div>
 
@@ -462,8 +461,8 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       <div class="panel-body">
         <div class="handline">
           <input id="codeInput" type="text" inputmode="text" autocapitalize="characters"
-                 autocorrect="off" spellcheck="false" placeholder="LOT-0001"
-                 aria-label="QR-Code von Hand eingeben">
+                 autocorrect="off" spellcheck="false"
+                 aria-label="Artikelnummer von Hand eingeben">
           <button class="b b-primary" id="codeGo" type="button">Übernehmen</button>
         </div>
         <div class="demo-codes" id="demoCodes"></div>
@@ -716,15 +715,15 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     stage.className = 'stage ' + (kind || '');
     document.getElementById('stageKicker').textContent = kicker;
     document.getElementById('stageTitle').textContent = titel;
-    document.getElementById('stageSub').innerHTML = sub;
+    var subEl = document.getElementById('stageSub');
+    subEl.innerHTML = sub;
+    subEl.hidden = !sub;
     stage.classList.remove('pulse');
     void stage.offsetWidth;
     stage.classList.add('pulse');
   }
   function bereit() {
-    zeigen('', 'Bereit', 'Etikett scannen',
-      'Der Scanner am iPad wird wie eine Tastatur gelesen — einfach abdrücken. ' +
-      'Was mit dem Artikel passiert, wählst du danach.');
+    zeigen('', 'Bereit', 'Etikett scannen', '');
   }
 
   /* =====================================================================
