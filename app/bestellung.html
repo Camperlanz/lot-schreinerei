@@ -269,6 +269,21 @@ input[type="number"]{font-family:var(--f-mono); font-variant-numeric:tabular-num
 .b-flag:hover{filter:brightness(.97)}
 .b-flag.on{background:var(--bg-surface); color:var(--text-muted); border-color:var(--border-base)}
 
+/* Wareneingang in der Artikelkarte */
+.wareneingang{
+  border:1px solid var(--info-bd); background:var(--info-bg);
+  border-radius:var(--r-md); padding:13px 14px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.we-kopf{
+  margin:0; font:500 13px/1.4 var(--f-mono); color:var(--info-text);
+}
+.we-zeile{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:9px}
+.we-zeile input{min-height:var(--touch-comfort); text-align:center}
+
+/* Bestellte Zeile in der Liste */
+.line.bestellt{background:var(--bg-raised)}
+
 .handline{display:flex; gap:8px; flex-wrap:wrap}
 .handline input{flex:1; min-width:190px}
 .demo-codes{display:flex; flex-wrap:wrap; gap:7px}
@@ -561,10 +576,17 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
      Wer dort etwas anlegt, findet es hier sofort beim Scannen. */
   var STAMM = LotStamm.ladeArtikel();
 
-  var KEY = 'lot.lager.v4';
+  var KEY = 'lot.lager.v5';
   var root = document.documentElement;
 
-  var bestand = {}, gemeldet = {}, mengen = {}, log = [];
+  var bestand = {}, log = [];
+
+  /* Offene Bestellpositionen:
+     offen[code] = { status:'gemeldet'|'bestellt', menge:n, wann:'29.08. 14:22' }
+     gemeldet  — die Werkstatt hat gesagt, dass es fehlt
+     bestellt  — das Büro hat die Bestellung ausgelöst
+     Kommt die Ware an, wird zugebucht und der Eintrag fällt weg. */
+  var offen = {};
   var ton = true;
 
   /* ---------- Speicher ---------- */
@@ -575,7 +597,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   function save() {
     try {
       window.localStorage.setItem(KEY, JSON.stringify({
-        ist: bestand, gemeldet: gemeldet, mengen: mengen, log: log, ton: ton
+        ist: bestand, offen: offen, log: log, ton: ton
       }));
     } catch (e) { /* privater Modus: Zustand bleibt nur fuer diese Sitzung */ }
   }
@@ -586,26 +608,31 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     STAMM.forEach(function (a) {
       if (gespeichert.ist && typeof gespeichert.ist[a.code] === 'number') bestand[a.code] = gespeichert.ist[a.code];
     });
-    gemeldet = gespeichert.gemeldet || {};
-    mengen = gespeichert.mengen || {};
+    offen = gespeichert.offen || {};
     log = Array.isArray(gespeichert.log) ? gespeichert.log : [];
     if (typeof gespeichert.ton === 'boolean') ton = gespeichert.ton;
   } else {
     /* Beim ersten Start: was leer ist, gehoert auf die Liste.
        Danach zaehlt nur noch, was jemand meldet oder streicht. */
-    STAMM.forEach(function (a) { if (a.ist <= 0) gemeldet[a.code] = true; });
+    STAMM.forEach(function (a) { if (a.ist <= 0) offen[a.code] = neuerEintrag('gemeldet'); });
   }
 
   function artikel(code) {
     for (var i = 0; i < STAMM.length; i++) if (STAMM[i].code === code) return STAMM[i];
     return null;
   }
+  function neuerEintrag(status, menge) {
+    return { status: status, menge: menge || 0, wann: heute() + ' ' + uhrzeit() };
+  }
+  function istBestellt(code) { return !!offen[code] && offen[code].status === 'bestellt'; }
+
   function status(a) {
+    if (istBestellt(a.code)) return { key:'info', text:'Bestellt' };
     if (bestand[a.code] <= 0) return { key:'err', text:'Leer' };
-    if (gemeldet[a.code]) return { key:'warn', text:'Gemeldet' };
+    if (offen[a.code]) return { key:'warn', text:'Gemeldet' };
     return { key:'ok', text:'Im Lager' };
   }
-  function offeneListe() { return STAMM.filter(function (a) { return !!gemeldet[a.code]; }); }
+  function offeneListe() { return STAMM.filter(function (a) { return !!offen[a.code]; }); }
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
@@ -614,6 +641,10 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   function uhrzeit() {
     var d = new Date();
     return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+  function heute() {
+    var d = new Date();
+    return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.';
   }
 
   /* ---------- Ton: kurzes Signal, weil beim Scannen niemand aufs Display schaut ---- */
@@ -784,9 +815,15 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     menge = 1;
     piep('ok');
     var st = status(a);
-    zeigen('', 'Erkannt', a.name,
-      'Bestand <b>' + bestand[a.code] + ' ' + esc(a.einheit) + '</b> · ' +
-      esc(a.ort) + ' · ' + st.text);
+    if (istBestellt(a.code)) {
+      zeigen('info', 'Wartet auf Lieferung', a.name,
+        'Bestellt am <b>' + esc(offen[a.code].wann) + '</b> &middot; ' +
+        'Ist die Ware da? Stückzahl eintragen und Erhalten tippen.');
+    } else {
+      zeigen('', 'Erkannt', a.name,
+        'Bestand <b>' + bestand[a.code] + ' ' + esc(a.einheit) + '</b> &middot; ' +
+        esc(a.ort) + ' &middot; ' + st.text);
+    }
     renderArticle();
   }
 
@@ -803,7 +840,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     bestand[a.code] = alt + richtung * m;
     protokoll(a, richtung < 0 ? 'Entnahme' : 'Zugang', m);
     var leer = false;
-    if (bestand[a.code] <= 0 && !gemeldet[a.code]) {
+    if (bestand[a.code] <= 0 && !offen[a.code]) {
       melden(a.code, true, true);
       leer = true;
     }
@@ -816,12 +853,10 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     var a = artikel(code);
     if (!a) return;
     if (an) {
-      gemeldet[code] = true;
-      if (typeof mengen[code] !== 'number') mengen[code] = 0;
+      offen[code] = neuerEintrag('gemeldet');
       protokoll(a, 'Gemeldet', 0);
     } else {
-      delete gemeldet[code];
-      delete mengen[code];
+      delete offen[code];
       protokoll(a, 'Meldung zurück', 0);
     }
     save();
@@ -916,7 +951,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     }
     panel.hidden = false;
     var a = aktuell, b = bestand[a.code], st = status(a);
-    var an = !!gemeldet[a.code];
+    var an = !!offen[a.code];
 
     var wrap = document.createElement('div');
     wrap.className = 'article';
@@ -940,9 +975,19 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
         '<button class="b b-primary" id="raus" type="button">Entnehmen</button>' +
         '<button class="b b-secondary" id="rein" type="button">Einlagern</button>' +
       '</div>' +
-      '<button class="b b-flag' + (an ? ' on' : '') + '" id="flag" type="button">' +
-        (an ? 'Von der Bestellliste nehmen' : 'Muss bestellt werden') +
-      '</button>';
+      (istBestellt(a.code)
+        ? '<div class="wareneingang">' +
+            '<p class="we-kopf">Bestellt am ' + esc(offen[a.code].wann) +
+              (offen[a.code].menge ? ' &middot; ' + offen[a.code].menge + ' ' + esc(a.einheit) : '') + '</p>' +
+            '<div class="we-zeile">' +
+              '<input id="weMenge" type="number" min="1" step="1" value="' +
+                (offen[a.code].menge || '') + '" placeholder="Stückzahl" aria-label="Erhaltene Stückzahl">' +
+              '<button class="b b-primary" id="weBtn" type="button">Erhalten</button>' +
+            '</div>' +
+          '</div>'
+        : '<button class="b b-flag' + (an ? ' on' : '') + '" id="flag" type="button">' +
+            (an ? 'Von der Bestellliste nehmen' : 'Muss bestellt werden') +
+          '</button>');
     box.appendChild(wrap);
 
     /* Schnellmengen für die häufigsten Griffe */
@@ -975,10 +1020,30 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     });
     document.getElementById('raus').addEventListener('click', function(){ handBuchen(-1); });
     document.getElementById('rein').addEventListener('click', function(){ handBuchen(1); });
-    document.getElementById('flag').addEventListener('click', function () {
-      melden(a.code, !gemeldet[a.code]);
-      renderArticle();
-    });
+    var flagBtn = document.getElementById('flag');
+    if (flagBtn) {
+      flagBtn.addEventListener('click', function () {
+        melden(a.code, !offen[a.code]);
+        renderArticle();
+      });
+    }
+    var weBtn = document.getElementById('weBtn');
+    if (weBtn) {
+      weBtn.addEventListener('click', function () {
+        var feld = document.getElementById('weMenge');
+        var m = parseInt(feld.value, 10);
+        if (isNaN(m) || m < 1) {
+          piep('err');
+          zeigen('err', 'Stückzahl fehlt', a.name, 'Wie viel ist angekommen? Zahl eintragen, dann Erhalten.');
+          feld.focus();
+          return;
+        }
+        wareneingang(a, m);
+        piep('ok');
+        zeigen('ok', 'Wareneingang', a.name,
+          '+<b>' + m + ' ' + esc(a.einheit) + '</b> &middot; Bestand jetzt <b>' + bestand[a.code] + '</b>');
+      });
+    }
   }
 
   function setMenge(v) {
@@ -1018,10 +1083,11 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     }
     log.forEach(function (e) {
       var art = e.art;
-      var kind = art === 'Entnahme' ? 'info' : (art === 'Zugang' ? 'ok' : (art === 'Gemeldet' ? 'warn' : 'info'));
+      var kind = (art === 'Zugang' || art === 'Wareneingang') ? 'ok'
+               : (art === 'Gemeldet' ? 'warn' : 'info');
       var m = e.menge > 0
-        ? (art === 'Entnahme' ? '−' : '+') + e.menge + ' ' + esc(e.einheit)
-        : '—';
+        ? (art === 'Entnahme' ? '\u2212' : '+') + e.menge + ' ' + esc(e.einheit)
+        : '\u2014';
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td class="num">' + esc(e.zeit) + '</td>' +
@@ -1051,7 +1117,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       return;
     }
     liste.forEach(function (a) {
-      var st = status(a), an = !!gemeldet[a.code];
+      var st = status(a), an = !!offen[a.code];
       var tr = document.createElement('tr');
       if (an) tr.className = 'flagged';
       tr.innerHTML =
@@ -1082,7 +1148,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       zeigen('', 'Ausgewählt', aktuell.name,
         'Bestand <b>' + bestand[code] + ' ' + esc(aktuell.einheit) + '</b> · ' + st.text);
     } else {
-      melden(code, !gemeldet[code], true);
+      melden(code, !offen[code], true);
       renderLager();
       if (aktuell && aktuell.code === code) renderArticle();
     }
@@ -1092,11 +1158,11 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   function renderOrder() {
     var box = document.getElementById('orderList');
     box.innerHTML = '';
-    var offen = offeneListe();
+    var liste = offeneListe();
 
-    if (!offen.length) {
+    if (!liste.length) {
       box.innerHTML = '<div class="panel"><div class="panel-body"><div class="empty">' +
-        '<b>Nichts zu bestellen</b>' +
+        '<b>Nichts offen</b>' +
         '<span>Sobald jemand in der Werkstatt einen Artikel meldet, steht er hier.</span>' +
         '</div></div></div>';
       document.getElementById('orderSummary').hidden = true;
@@ -1105,37 +1171,57 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     }
 
     var nachLieferant = {};
-    offen.forEach(function (a) {
+    liste.forEach(function (a) {
       if (!nachLieferant[a.lieferant]) nachLieferant[a.lieferant] = [];
       nachLieferant[a.lieferant].push(a);
     });
 
     Object.keys(nachLieferant).forEach(function (lief) {
+      var gruppe = nachLieferant[lief];
+      var wartend = gruppe.filter(function (a) { return offen[a.code].status === 'gemeldet'; }).length;
+
       var group = document.createElement('div');
       group.className = 'supplier';
       var head = document.createElement('div');
       head.className = 'sup-head';
       head.innerHTML = '<h4>' + esc(lief) + '</h4>' +
-        '<span class="cnt">' + nachLieferant[lief].length + ' Positionen</span>';
+        '<span class="cnt">' + gruppe.length + ' Positionen</span>' +
+        (wartend
+          ? '<button class="b b-secondary b-sm" data-act="alle" data-lief="' + esc(lief) + '">' +
+            'Alle ' + wartend + ' als bestellt</button>'
+          : '');
       group.appendChild(head);
 
       var body = document.createElement('div');
       body.className = 'sup-body';
-      nachLieferant[lief].forEach(function (a) {
+      gruppe.forEach(function (a) {
+        var e = offen[a.code];
+        var bestellt = e.status === 'bestellt';
         var line = document.createElement('div');
-        line.className = 'line';
+        line.className = 'line' + (bestellt ? ' bestellt' : '');
         line.setAttribute('data-code', a.code);
         line.innerHTML =
-          '<div class="t"><b>' + esc(a.name) + '</b>' +
-            '<span>' + esc(a.code) + ' · ' + esc(a.ort) + '</span></div>' +
+          '<div class="t">' +
+            '<b>' + esc(a.name) + '</b>' +
+            '<span>' + esc(a.code) + ' &middot; ' + esc(a.ort) + '</span>' +
+            '<span class="pill ' + (bestellt ? 'info' : 'warn') + '" style="margin-top:6px">' +
+              (bestellt ? 'Bestellt ' + esc(e.wann) : 'Gemeldet ' + esc(e.wann)) +
+            '</span>' +
+          '</div>' +
           '<div class="have">Bestand ' + bestand[a.code] + ' ' + esc(a.einheit) + '</div>' +
           '<div class="qty">' +
             '<input type="number" min="0" step="1" placeholder="Menge"' +
-            ' value="' + (mengen[a.code] ? mengen[a.code] : '') + '"' +
-            ' aria-label="Bestellmenge ' + esc(a.name) + '">' +
+            ' value="' + (e.menge ? e.menge : '') + '"' +
+            ' aria-label="' + (bestellt ? 'Erhaltene' : 'Bestellte') + ' Menge ' + esc(a.name) + '">' +
             '<span>' + esc(a.einheit) + '</span>' +
           '</div>' +
-          '<button class="b b-secondary b-sm" data-act="weg" data-code="' + a.code + '">Streichen</button>';
+          '<div class="cellbtns">' +
+            (bestellt
+              ? '<button class="b b-primary b-sm" data-act="erhalten" data-code="' + esc(a.code) + '">Erhalten</button>' +
+                '<button class="b b-secondary b-sm" data-act="zurueck" data-code="' + esc(a.code) + '">Doch nicht</button>'
+              : '<button class="b b-primary b-sm" data-act="bestellt" data-code="' + esc(a.code) + '">Bestellt</button>' +
+                '<button class="b b-secondary b-sm" data-act="weg" data-code="' + esc(a.code) + '">Streichen</button>') +
+          '</div>';
         body.appendChild(line);
       });
       group.appendChild(body);
@@ -1151,52 +1237,143 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     if (e.target.type !== 'number') return;
     var line = e.target.closest('.line');
     if (!line) return;
+    var code = line.getAttribute('data-code');
+    if (!offen[code]) return;
     var v = parseInt(e.target.value, 10);
-    mengen[line.getAttribute('data-code')] = (isNaN(v) || v < 0) ? 0 : v;
+    offen[code].menge = (isNaN(v) || v < 0) ? 0 : v;
     save();
     renderSummary();
   });
+
   document.getElementById('orderList').addEventListener('click', function (e) {
-    var btn = e.target.closest('button[data-act="weg"]');
+    var btn = e.target.closest('button[data-act]');
     if (!btn) return;
-    melden(btn.getAttribute('data-code'), false, true);
-    renderOrder();
-    if (aktuell) renderArticle();
+    var act = btn.getAttribute('data-act');
+
+    /* Ganze Lieferantengruppe auf einmal als bestellt vermerken */
+    if (act === 'alle') {
+      var lief = btn.getAttribute('data-lief');
+      var n = 0;
+      offeneListe().forEach(function (a) {
+        if (a.lieferant === lief && offen[a.code].status === 'gemeldet') {
+          alsBestellt(a, true); n++;
+        }
+      });
+      save();
+      renderBadges();
+      orderSay('info', 'Als bestellt vermerkt. ',
+        n + (n === 1 ? ' Position' : ' Positionen') + ' bei ' + lief +
+        ' warten jetzt auf die Lieferung.');
+      renderOrder();
+      return;
+    }
+
+    var code = btn.getAttribute('data-code');
+    var a = artikel(code);
+    if (!a) return;
+
+    if (act === 'bestellt') {
+      alsBestellt(a, false);
+      save();
+      orderSay('info', 'Als bestellt vermerkt. ',
+        a.name + ' wartet auf die Lieferung. Wer sie annimmt, tippt auf Erhalten.');
+      renderOrder();
+      return;
+    }
+
+    if (act === 'zurueck') {
+      offen[code].status = 'gemeldet';
+      offen[code].wann = heute() + ' ' + uhrzeit();
+      protokoll(a, 'Bestellung zurück', 0);
+      save();
+      orderSay('warn', 'Zurückgesetzt. ', a.name + ' steht wieder als gemeldet auf der Liste.');
+      renderOrder();
+      return;
+    }
+
+    if (act === 'weg') {
+      melden(code, false, true);
+      renderOrder();
+      if (aktuell) renderArticle();
+      return;
+    }
+
+    if (act === 'erhalten') {
+      var feld = btn.closest('.line').querySelector('input[type="number"]');
+      var menge = parseInt(feld.value, 10);
+      if (isNaN(menge) || menge < 1) {
+        orderSay('err', 'Stückzahl fehlt. ',
+          'Wie viel ist angekommen? Die Zahl eintragen, dann auf Erhalten tippen.');
+        feld.focus();
+        return;
+      }
+      wareneingang(a, menge);
+      orderSay('ok', 'Eingebucht. ',
+        menge + ' ' + a.einheit + ' ' + a.name + ' — Bestand jetzt ' + bestand[a.code] + '.');
+      renderOrder();
+      return;
+    }
   });
 
+  /* Büro vermerkt: Bestellung ist raus */
+  function alsBestellt(a, still) {
+    var e = offen[a.code];
+    if (!e || e.status === 'bestellt') return;
+    e.status = 'bestellt';
+    e.wann = heute() + ' ' + uhrzeit();
+    protokoll(a, 'Bestellt', e.menge || 0);
+    if (!still) renderBadges();
+  }
+
+  /* Werkstatt bucht die Lieferung zu — danach ist die Position erledigt */
+  function wareneingang(a, menge) {
+    bestand[a.code] = bestand[a.code] + menge;
+    protokoll(a, 'Wareneingang', menge);
+    delete offen[a.code];
+    save();
+    renderBadges();
+    renderLager();
+    if (aktuell && aktuell.code === a.code) renderArticle();
+  }
+
   function renderSummary() {
-    var offen = offeneListe(), liefs = {};
-    offen.forEach(function (a) { liefs[a.lieferant] = true; });
-    var n = Object.keys(liefs).length;
+    var liste = offeneListe();
+    var gemeldetN = liste.filter(function (a) { return offen[a.code].status === 'gemeldet'; }).length;
+    var bestelltN = liste.length - gemeldetN;
     document.getElementById('sumTitle').textContent =
-      offen.length === 1 ? '1 Position' : offen.length + ' Positionen';
-    document.getElementById('sumSub').textContent = 'bei ' + n + (n === 1 ? ' Lieferant' : ' Lieferanten');
-    document.getElementById('makeList').disabled = offen.length === 0;
+      gemeldetN + (gemeldetN === 1 ? ' Position offen' : ' Positionen offen');
+    document.getElementById('sumSub').textContent =
+      bestelltN
+        ? bestelltN + (bestelltN === 1 ? ' Position ist bestellt und wartet auf Lieferung'
+                                       : ' Positionen sind bestellt und warten auf Lieferung')
+        : 'nichts unterwegs';
+    document.getElementById('makeList').disabled = gemeldetN === 0;
   }
 
   document.getElementById('makeList').addEventListener('click', function () {
-    var offen = offeneListe();
-    if (!offen.length) return;
-    var ohne = offen.filter(function (a) { return !mengen[a.code]; });
-    var liefs = {};
-    offen.forEach(function (a) { liefs[a.lieferant] = (liefs[a.lieferant] || 0) + 1; });
-    var teile = Object.keys(liefs).map(function (l) { return l + ' (' + liefs[l] + ')'; });
+    var wartend = offeneListe().filter(function (a) { return offen[a.code].status === 'gemeldet'; });
+    if (!wartend.length) return;
+    var ohne = wartend.filter(function (a) { return !offen[a.code].menge; });
     if (ohne.length) {
       orderSay('warn', 'Mengen fehlen. ',
-        ohne.length + ' von ' + offen.length + ' Positionen haben noch keine Menge — zuerst eintragen.');
+        ohne.length + ' von ' + wartend.length + ' Positionen haben noch keine Menge — zuerst eintragen.');
       return;
     }
+    var liefs = {};
+    wartend.forEach(function (a) { liefs[a.lieferant] = (liefs[a.lieferant] || 0) + 1; });
+    var teile = Object.keys(liefs).map(function (l) { return l + ' (' + liefs[l] + ')'; });
     orderSay('info', 'Liste steht bereit. ',
-      offen.length + ' Positionen für ' + teile.join(', ') +
-      '. Versand an die Lieferanten kommt, sobald die Schnittstelle steht.');
+      wartend.length + ' Positionen für ' + teile.join(', ') +
+      '. Versand an die Lieferanten kommt, sobald die Schnittstelle steht — bis dahin ' +
+      'nach dem Bestellen je Position auf Bestellt tippen.');
   });
 
   /* ---------- Zuruecksetzen ---------- */
   document.getElementById('resetBtn').addEventListener('click', function () {
     STAMM = LotStamm.ladeArtikel();
     STAMM.forEach(function (a) { bestand[a.code] = a.ist; });
-    gemeldet = {}; mengen = {}; log = [];
-    STAMM.forEach(function (a) { if (a.ist <= 0) gemeldet[a.code] = true; });
+    offen = {}; log = [];
+    STAMM.forEach(function (a) { if (a.ist <= 0) offen[a.code] = neuerEintrag('gemeldet'); });
     aktuell = null; menge = 1; letzterCode = '';
     save();
     renderArticle(); renderLog(); renderLager(); renderOrder(); renderBadges();
