@@ -928,7 +928,6 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       '</div>' +
       '<div class="stockline">' +
         '<span class="big">' + b + '</span><span class="unit">' + esc(a.einheit) + '</span>' +
-        '<span class="of">Gebinde ' + a.schritt + ' ' + esc(a.einheit) + '</span>' +
       '</div>' +
       '<div><span class="pill ' + st.key + '">' + st.text + '</span></div>' +
       '<div class="stepper">' +
@@ -946,9 +945,9 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       '</button>';
     box.appendChild(wrap);
 
-    /* Schnellmengen: einzeln, Gebinde, fünf Gebinde */
+    /* Schnellmengen für die häufigsten Griffe */
     var chips = document.getElementById('qtyChips');
-    var werte = [1, a.schritt, a.schritt * 5], gesehen = {};
+    var werte = [1, 10, 100], gesehen = {};
     werte.forEach(function (n) {
       if (n < 1 || gesehen[n]) return;
       gesehen[n] = true;
@@ -1131,7 +1130,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
             '<span>' + esc(a.code) + ' · ' + esc(a.ort) + '</span></div>' +
           '<div class="have">Bestand ' + bestand[a.code] + ' ' + esc(a.einheit) + '</div>' +
           '<div class="qty">' +
-            '<input type="number" min="0" step="' + a.schritt + '" placeholder="Menge"' +
+            '<input type="number" min="0" step="1" placeholder="Menge"' +
             ' value="' + (mengen[a.code] ? mengen[a.code] : '') + '"' +
             ' aria-label="Bestellmenge ' + esc(a.name) + '">' +
             '<span>' + esc(a.einheit) + '</span>' +

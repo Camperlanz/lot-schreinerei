@@ -288,11 +288,6 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
           <span class="note">Damit man ihn wiederfindet.</span>
         </div>
         <div class="field">
-          <label for="fSchritt">Gebinde</label>
-          <input id="fSchritt" type="number" min="1" step="1" value="1">
-          <span class="note">Verpackungseinheit — füllt die Schnelltasten beim Buchen.</span>
-        </div>
-        <div class="field">
           <label for="fIst">Anfangsbestand</label>
           <input id="fIst" type="number" min="0" step="1" value="0">
         </div>
@@ -315,7 +310,6 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
             <th scope="col">Lieferant</th>
             <th scope="col">Einheit</th>
             <th scope="col">Ort</th>
-            <th scope="col" class="right">Gebinde</th>
             <th scope="col">Aktion</th>
           </tr>
         </thead>
@@ -393,7 +387,6 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     name: document.getElementById('fName'),
     einheit: document.getElementById('fEinheit'),
     ort: document.getElementById('fOrt'),
-    schritt: document.getElementById('fSchritt'),
     ist: document.getElementById('fIst')
   };
 
@@ -448,7 +441,6 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     F.code.value    = a ? a.code : '';
     F.name.value    = a ? a.name : '';
     F.ort.value     = a ? a.ort : '';
-    F.schritt.value = a ? a.schritt : 1;
     F.ist.value     = a ? a.ist : 0;
     /* Der Bestand wird beim Buchen geführt, nicht hier nachträglich verstellt */
     F.ist.disabled = !!a;
@@ -495,13 +487,10 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       say('err', 'Nummer gibt es schon. ', code + ' ist bereits vergeben.');
       F.code.focus(); return;
     }
-    var schritt = parseInt(F.schritt.value, 10);
-    if (isNaN(schritt) || schritt < 1) schritt = 1;
-
     if (bearbeitet) {
       var a = finde(bearbeitet);
       a.code = code; a.name = name; a.lieferant = lieferant;
-      a.einheit = F.einheit.value; a.ort = F.ort.value.trim(); a.schritt = schritt;
+      a.einheit = F.einheit.value; a.ort = F.ort.value.trim();
       say('ok', 'Gespeichert. ', name + ' wurde geändert.');
     } else {
       var ist = parseInt(F.ist.value, 10);
@@ -509,7 +498,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       liste.push({
         code: code, name: name, einheit: F.einheit.value,
         lieferant: lieferant, ort: F.ort.value.trim(),
-        ist: ist, schritt: schritt
+        ist: ist
       });
       say('ok', 'Erfasst. ', name + ' ist angelegt und beim Scannen sofort auffindbar.');
     }
@@ -537,12 +526,12 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       liste.length === 1 ? '1 Artikel' : liste.length + ' Artikel';
 
     if (!liste.length) {
-      tb.innerHTML = '<tr><td colspan="7"><div class="empty"><b>Noch keine Artikel</b>' +
+      tb.innerHTML = '<tr><td colspan="6"><div class="empty"><b>Noch keine Artikel</b>' +
         '<span>Oben auf „Neuer Artikel" tippen.</span></div></td></tr>';
       return;
     }
     if (!gefiltert.length) {
-      tb.innerHTML = '<tr><td colspan="7"><div class="empty"><b>Nichts gefunden</b>' +
+      tb.innerHTML = '<tr><td colspan="6"><div class="empty"><b>Nichts gefunden</b>' +
         '<span>Andere Suche versuchen.</span></div></td></tr>';
       return;
     }
@@ -556,7 +545,6 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
         '<td>' + esc(a.lieferant) + '</td>' +
         '<td>' + esc(a.einheit) + '</td>' +
         '<td>' + (a.ort ? esc(a.ort) : '<span style="color:var(--text-faint)">—</span>') + '</td>' +
-        '<td class="num right">' + a.schritt + '</td>' +
         '<td><div class="cellbtns">' +
           '<button class="b b-secondary b-sm" data-act="edit" data-code="' + esc(a.code) + '">Bearbeiten</button>' +
           '<button class="b b-danger b-sm" data-act="del" data-code="' + esc(a.code) + '">' +
