@@ -269,6 +269,17 @@ input[type="number"]{font-family:var(--f-mono); font-variant-numeric:tabular-num
 .b-flag:hover{filter:brightness(.97)}
 .b-flag.on{background:var(--bg-surface); color:var(--text-muted); border-color:var(--border-base)}
 
+/* Melden mit Menge in der Artikelkarte */
+.melden{display:flex; flex-direction:column; gap:10px}
+.melden.offen{
+  border:1px solid var(--warn-bd); background:var(--warn-bg);
+  border-radius:var(--r-md); padding:13px 14px;
+}
+.melden-kopf{margin:0; font:500 13px/1.4 var(--f-mono); color:var(--warn-text)}
+.melden-zeile{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:9px}
+.melden-zeile input{min-height:var(--touch-comfort); text-align:center}
+.melden-zeile .b-flag{width:auto}
+
 /* Wareneingang in der Artikelkarte */
 .wareneingang{
   border:1px solid var(--info-bd); background:var(--info-bg);
@@ -841,7 +852,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     protokoll(a, richtung < 0 ? 'Entnahme' : 'Zugang', m);
     var leer = false;
     if (bestand[a.code] <= 0 && !offen[a.code]) {
-      melden(a.code, true, true);
+      melden(a.code, true, true, 0);
       leer = true;
     }
     save();
@@ -849,12 +860,13 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     return { ok:true, leer:leer };
   }
 
-  function melden(code, an, still) {
+  function melden(code, an, still, menge) {
     var a = artikel(code);
     if (!a) return;
+    var m = menge > 0 ? menge : 0;
     if (an) {
-      offen[code] = neuerEintrag('gemeldet');
-      protokoll(a, 'Gemeldet', 0);
+      offen[code] = neuerEintrag('gemeldet', m);
+      protokoll(a, 'Gemeldet', m);
     } else {
       delete offen[code];
       protokoll(a, 'Meldung zurück', 0);
@@ -862,8 +874,13 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     save();
     renderBadges();
     if (!still) {
-      if (an) zeigen('warn', 'Gemeldet', a.name, 'Steht jetzt auf der Büroliste.');
-      else zeigen('', 'Zurückgenommen', a.name, 'Von der Büroliste gestrichen.');
+      if (an) {
+        zeigen('warn', 'Gemeldet', a.name,
+          m ? 'Steht mit <b>' + m + ' ' + esc(a.einheit) + '</b> auf der Büroliste.'
+            : 'Steht auf der Büroliste — die Menge trägt das Büro ein.');
+      } else {
+        zeigen('', 'Zurückgenommen', a.name, 'Von der Büroliste gestrichen.');
+      }
     }
   }
 
@@ -985,9 +1002,19 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
               '<button class="b b-primary" id="weBtn" type="button">Erhalten</button>' +
             '</div>' +
           '</div>'
-        : '<button class="b b-flag' + (an ? ' on' : '') + '" id="flag" type="button">' +
-            (an ? 'Von der Bestellliste nehmen' : 'Muss bestellt werden') +
-          '</button>');
+        : '<div class="melden' + (an ? ' offen' : '') + '">' +
+            (an
+              ? '<p class="melden-kopf">Auf der Büroliste seit ' + esc(offen[a.code].wann) + '</p>'
+              : '') +
+            '<div class="melden-zeile">' +
+              '<input id="meldeMenge" type="number" min="0" step="1" value="' +
+                (an && offen[a.code].menge ? offen[a.code].menge : '') +
+                '" placeholder="Menge" aria-label="Benötigte Menge">' +
+              '<button class="b b-flag' + (an ? ' on' : '') + '" id="flag" type="button">' +
+                (an ? 'Von der Bestellliste nehmen' : 'Muss bestellt werden') +
+              '</button>' +
+            '</div>' +
+          '</div>');
     box.appendChild(wrap);
 
     /* Schnellmengen für die häufigsten Griffe */
@@ -1023,8 +1050,19 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     var flagBtn = document.getElementById('flag');
     if (flagBtn) {
       flagBtn.addEventListener('click', function () {
-        melden(a.code, !offen[a.code]);
+        var feld = document.getElementById('meldeMenge');
+        var m = feld ? parseInt(feld.value, 10) : NaN;
+        melden(a.code, !offen[a.code], false, (isNaN(m) || m < 0) ? 0 : m);
         renderArticle();
+      });
+    }
+    /* Menge nachtraeglich aendern, solange die Position offen ist */
+    var meldeFeld = document.getElementById('meldeMenge');
+    if (meldeFeld && offen[a.code]) {
+      meldeFeld.addEventListener('input', function () {
+        var m = parseInt(this.value, 10);
+        offen[a.code].menge = (isNaN(m) || m < 0) ? 0 : m;
+        save();
       });
     }
     var weBtn = document.getElementById('weBtn');
