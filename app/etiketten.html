@@ -151,6 +151,7 @@ body{
   display:flex; flex-direction:column; gap:5px;
 }
 .format:hover{border-color:var(--border-strong); background:var(--bg-sunken)}
+.format.empfohlen{border-color:var(--brand-quiet-bd)}
 .format[aria-pressed="true"]{
   border-color:var(--brand); background:var(--brand-quiet);
   box-shadow:inset 3px 0 0 var(--brand);
@@ -158,6 +159,38 @@ body{
 .format b{font:600 15px/1.25 var(--f-body)}
 .format .masse{font:500 13px/1.3 var(--f-mono); color:var(--brand-text)}
 .format small{font:400 12px/1.45 var(--f-body); color:var(--text-faint)}
+
+.wordtipp{
+  margin:0; padding:12px 14px; max-width:78ch;
+  background:var(--bg-sunken); border:1px solid var(--border-subtle);
+  border-radius:var(--r-md);
+  font:400 14px/1.6 var(--f-body); color:var(--text-base);
+}
+.wordtipp b{color:var(--text-strong)}
+.wordtipp em{font-style:normal; font-weight:500; color:var(--brand-text)}
+
+.eigenes{
+  border:1px solid var(--brand-quiet-bd); background:var(--brand-quiet);
+  border-radius:var(--r-md); padding:14px 15px;
+  display:flex; flex-direction:column; gap:12px;
+}
+.eigenes-kopf{
+  margin:0; font:500 12px/1 var(--f-mono); letter-spacing:.08em;
+  text-transform:uppercase; color:var(--brand-text);
+}
+.eigen-felder{display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:10px}
+.eigen-felder label{
+  display:flex; flex-direction:column; gap:5px;
+  font:400 12px/1.3 var(--f-body); color:var(--text-muted);
+}
+.eigen-felder input{
+  min-height:var(--touch-min); padding:0 10px; text-align:center;
+  background:var(--bg-surface); color:var(--text-strong);
+  border:1px solid var(--border-base); border-radius:var(--r-sm);
+  font:500 15px/1 var(--f-mono); font-variant-numeric:tabular-nums;
+}
+.eigenes-fuss{margin:0; font:400 13px/1.5 var(--f-body); color:var(--text-muted)}
+.eigenes-fuss.warnung{color:var(--err-text); font-weight:500}
 
 /* Auswahlliste */
 .filter{display:flex; gap:9px; flex-wrap:wrap; align-items:center}
@@ -313,7 +346,8 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
   <div class="head">
     <div>
       <h2>Etiketten</h2>
-      <p>QR-Code, Bezeichnung, Lieferant und Lagerort — zum Aufkleben ans Regal oder ans Fach.</p>
+      <p>QR-Code, Bezeichnung, Lieferant und Lagerort — zum Aufkleben ans Regal oder ans Fach.
+         Vor der ersten grossen Serie einen Bogen auf Papier drucken und gegen die Etiketten halten.</p>
     </div>
   </div>
 
@@ -325,7 +359,31 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
   <div class="panel">
     <div class="panel-head">Bogenformat</div>
     <div class="panel-body">
+      <p class="wordtipp">
+        <b>So findest du den passenden Bogen zum Kaufen:</b> in Word auf
+        <em>Sendungen → Etiketten → Optionen</em>, dort Hersteller
+        <em>Avery Zweckform</em> wählen und die Vorlage mit denselben Massen suchen.
+        Die Nummer, die dort steht, bestellst du im Bürobedarf — dann passt der Bogen
+        zu Word und zu dieser Seite. Alle vier Masse unten sind gängige
+        Universaletiketten, die es von mehreren Herstellern gibt.
+      </p>
       <div class="formate" id="formate" role="group" aria-label="Etikettenformat"></div>
+
+      <div class="eigenes" id="eigenes" hidden>
+        <p class="eigenes-kopf">Masse von der Packung — alles in Millimetern</p>
+        <div class="eigen-felder">
+          <label>Breite<input type="number" id="eBreite" min="10" max="210" step="0.1"></label>
+          <label>Höhe<input type="number" id="eHoehe" min="10" max="297" step="0.1"></label>
+          <label>Spalten<input type="number" id="eSpalten" min="1" max="10" step="1"></label>
+          <label>Zeilen<input type="number" id="eZeilen" min="1" max="20" step="1"></label>
+          <label>Rand oben<input type="number" id="eRandOben" min="0" max="100" step="0.1"></label>
+          <label>Rand links<input type="number" id="eRandLinks" min="0" max="100" step="0.1"></label>
+          <label>Abstand quer<input type="number" id="eAbstandX" min="0" max="50" step="0.1"></label>
+          <label>Abstand hoch<input type="number" id="eAbstandY" min="0" max="50" step="0.1"></label>
+          <label>QR-Grösse<input type="number" id="eQr" min="8" max="60" step="0.5"></label>
+        </div>
+        <p class="eigenes-fuss" id="eigenesFuss"></p>
+      </div>
     </div>
   </div>
 
@@ -393,33 +451,47 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
      sind so gesetzt, dass die Etiketten auf dem Bogen sitzen, wo sie
      der Hersteller stanzt.
      ===================================================================== */
+  /* =====================================================================
+     Bogenformate. Bewusst nur nach Massen benannt — Bestellnummern der
+     Hersteller unterscheiden sich je nach Reihe und Land. Massgebend ist,
+     was auf deiner Packung steht: Etikettengrösse und Anzahl je Bogen.
+     Passt keines, gibt es unten das eigene Format.
+     ===================================================================== */
   var FORMATE = [
     {
-      key: 'gross',
-      name: 'Standard',
-      masse: '63,5 × 38,1 mm',
-      hinweis: 'Avery 3474 / L7160 · 21 Stück je Bogen. Genug Platz für die ganze Bezeichnung — die erste Wahl fürs Regal.',
-      breite: 63.5, hoehe: 38.1, spalten: 3, zeilen: 7,
-      randOben: 15.1, randLinks: 7.2, abstandX: 2.5, abstandY: 0,
-      qr: 26, klein: false
-    },
-    {
-      key: 'breit',
-      name: 'Breit',
-      masse: '99,1 × 42,3 mm',
-      hinweis: 'Avery 3653 / L7173 · 14 Stück je Bogen. Für lange Bezeichnungen und grosse Regalböden.',
-      breite: 99.1, hoehe: 42.3, spalten: 2, zeilen: 7,
-      randOben: 0, randLinks: 5.85, abstandX: 0, abstandY: 0,
+      key: 'a', name: '70 × 42,3 mm', masse: '21 Stück je Bogen · Empfehlung',
+      hinweis: 'Drei nebeneinander, sieben untereinander, randlos über den ganzen Bogen. Genug Platz für die volle Bezeichnung und einen 30-mm-Code.',
+      breite: 70, hoehe: 42.3, spalten: 3, zeilen: 7,
+      randOben: 0.45, randLinks: 0, abstandX: 0, abstandY: 0,
       qr: 30, klein: false
     },
     {
-      key: 'klein',
-      name: 'Klein',
-      masse: '48,5 × 25,4 mm',
-      hinweis: 'Avery 3658 / L7656 · 40 Stück je Bogen. Für Schubladen und kleine Fächer, Bezeichnung wird knapper.',
+      key: 'b', name: '70 × 36 mm', masse: '24 Stück je Bogen',
+      hinweis: 'Etwas flacher, dafür drei Etiketten mehr je Bogen.',
+      breite: 70, hoehe: 36, spalten: 3, zeilen: 8,
+      randOben: 4.5, randLinks: 0, abstandX: 0, abstandY: 0,
+      qr: 26, klein: false
+    },
+    {
+      key: 'c', name: '105 × 42,3 mm', masse: '14 Stück je Bogen',
+      hinweis: 'Zwei nebeneinander. Für Regalböden und alles, was von weitem lesbar sein soll.',
+      breite: 105, hoehe: 42.3, spalten: 2, zeilen: 7,
+      randOben: 0, randLinks: 0, abstandX: 0, abstandY: 0,
+      qr: 32, klein: false
+    },
+    {
+      key: 'd', name: '48,5 × 25,4 mm', masse: '40 Stück je Bogen',
+      hinweis: 'Klein, für Schubladen und Fächer. Die Bezeichnung wird knapp.',
       breite: 48.5, hoehe: 25.4, spalten: 4, zeilen: 10,
       randOben: 21.5, randLinks: 8, abstandX: 0, abstandY: 0,
       qr: 18, klein: true
+    },
+    {
+      key: 'eigen', name: 'Eigenes Format', masse: 'selbst eintragen',
+      hinweis: 'Masse von der Packung übernehmen. Wird gespeichert.',
+      breite: 63.5, hoehe: 38.1, spalten: 3, zeilen: 7,
+      randOben: 15.1, randLinks: 7.2, abstandX: 2.5, abstandY: 0,
+      qr: 26, klein: false, eigen: true
     }
   ];
 
@@ -476,6 +548,7 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
     b.innerHTML = '<b>' + esc(f.name) + '</b>' +
       '<span class="masse">' + esc(f.masse) + '</span>' +
       '<small>' + esc(f.hinweis) + '</small>';
+    if (f.key === 'a') b.classList.add('empfohlen');
     formateBox.appendChild(b);
   });
   formateBox.addEventListener('click', function (e) {
@@ -486,6 +559,79 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
     Array.prototype.forEach.call(formateBox.querySelectorAll('.format'), function (x) {
       x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
     });
+    syncEigenes();
+    zeichneBogen();
+  });
+
+  /* ---------- Eigenes Format ---------- */
+  var EIGEN_KEY = 'lot.etikettformat.v1';
+  var eigenFelder = {
+    breite: 'eBreite', hoehe: 'eHoehe', spalten: 'eSpalten', zeilen: 'eZeilen',
+    randOben: 'eRandOben', randLinks: 'eRandLinks',
+    abstandX: 'eAbstandX', abstandY: 'eAbstandY', qr: 'eQr'
+  };
+  var eigen = FORMATE[FORMATE.length - 1];
+
+  (function ladeEigenes() {
+    try {
+      var roh = window.localStorage.getItem(EIGEN_KEY);
+      if (!roh) return;
+      var d = JSON.parse(roh);
+      Object.keys(eigenFelder).forEach(function (k) {
+        if (typeof d[k] === 'number' && isFinite(d[k])) eigen[k] = d[k];
+      });
+    } catch (e) { /* nichts gespeichert oder Speicher gesperrt */ }
+  })();
+
+  Object.keys(eigenFelder).forEach(function (k) {
+    document.getElementById(eigenFelder[k]).value = eigen[k];
+  });
+
+  function syncEigenes() {
+    document.getElementById('eigenes').hidden = !format.eigen;
+    if (format.eigen) pruefeEigenes();
+  }
+
+  function pruefeEigenes() {
+    Object.keys(eigenFelder).forEach(function (k) {
+      var v = parseFloat(document.getElementById(eigenFelder[k]).value);
+      if (!isNaN(v) && v > 0) eigen[k] = (k === 'spalten' || k === 'zeilen') ? Math.round(v) : v;
+    });
+    eigen.klein = eigen.hoehe < 30;
+
+    var brauchtBreite = eigen.randLinks + eigen.spalten * eigen.breite +
+                        (eigen.spalten - 1) * eigen.abstandX;
+    var brauchtHoehe = eigen.randOben + eigen.zeilen * eigen.hoehe +
+                       (eigen.zeilen - 1) * eigen.abstandY;
+    var fuss = document.getElementById('eigenesFuss');
+    var meldungen = [];
+    if (brauchtBreite > 210.5) {
+      meldungen.push('Braucht ' + brauchtBreite.toFixed(1) + ' mm Breite — mehr als die 210 mm von A4.');
+    }
+    if (brauchtHoehe > 297.5) {
+      meldungen.push('Braucht ' + brauchtHoehe.toFixed(1) + ' mm Höhe — mehr als die 297 mm von A4.');
+    }
+    if (eigen.qr > eigen.hoehe - 4) {
+      meldungen.push('Der QR-Code ist höher als das Etikett.');
+    }
+    if (meldungen.length) {
+      fuss.className = 'eigenes-fuss warnung';
+      fuss.textContent = meldungen.join(' ');
+    } else {
+      fuss.className = 'eigenes-fuss';
+      fuss.textContent = eigen.spalten * eigen.zeilen + ' Etiketten je Bogen · belegt ' +
+        brauchtBreite.toFixed(1) + ' × ' + brauchtHoehe.toFixed(1) + ' mm von 210 × 297 mm.';
+    }
+
+    try {
+      var d = {};
+      Object.keys(eigenFelder).forEach(function (k) { d[k] = eigen[k]; });
+      window.localStorage.setItem(EIGEN_KEY, JSON.stringify(d));
+    } catch (e) { /* Speicher gesperrt: gilt nur für diese Sitzung */ }
+  }
+
+  document.getElementById('eigenes').addEventListener('input', function () {
+    pruefeEigenes();
     zeichneBogen();
   });
 
@@ -684,6 +830,7 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
   });
 
   /* ---------- Start ---------- */
+  syncEigenes();
   renderListe();
   zeichneBogen();
 })();
