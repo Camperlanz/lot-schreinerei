@@ -276,9 +276,6 @@ input[type="number"]{font-family:var(--f-mono); font-variant-numeric:tabular-num
   border-radius:var(--r-md); padding:13px 14px;
 }
 .melden-kopf{margin:0; font:500 13px/1.4 var(--f-mono); color:var(--warn-text)}
-.melden-zeile{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:9px}
-.melden-zeile input{min-height:var(--touch-comfort); text-align:center}
-.melden-zeile .b-flag{width:auto}
 
 /* Wareneingang in der Artikelkarte */
 .wareneingang{
@@ -984,7 +981,8 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       '<div><span class="pill ' + st.key + '">' + st.text + '</span></div>' +
       '<div class="stepper">' +
         '<button type="button" id="minus" aria-label="Menge verringern">−</button>' +
-        '<input id="qty" type="number" min="1" step="1" value="' + menge + '" aria-label="Menge">' +
+        '<input id="qty" type="number" min="1" step="1" value="' + menge +
+          '" aria-label="Menge zum Entnehmen, Einlagern oder Bestellen">' +
         '<button type="button" id="plus" aria-label="Menge erhöhen">+</button>' +
       '</div>' +
       '<div class="chipset" id="qtyChips"></div>' +
@@ -1004,16 +1002,13 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
           '</div>'
         : '<div class="melden' + (an ? ' offen' : '') + '">' +
             (an
-              ? '<p class="melden-kopf">Auf der Büroliste seit ' + esc(offen[a.code].wann) + '</p>'
+              ? '<p class="melden-kopf">Auf der Büroliste seit ' + esc(offen[a.code].wann) +
+                  (offen[a.code].menge ? ' &middot; ' + offen[a.code].menge + ' ' + esc(a.einheit) : '') +
+                '</p>'
               : '') +
-            '<div class="melden-zeile">' +
-              '<input id="meldeMenge" type="number" min="0" step="1" value="' +
-                (an && offen[a.code].menge ? offen[a.code].menge : '') +
-                '" placeholder="Menge" aria-label="Benötigte Menge">' +
-              '<button class="b b-flag' + (an ? ' on' : '') + '" id="flag" type="button">' +
-                (an ? 'Von der Bestellliste nehmen' : 'Muss bestellt werden') +
-              '</button>' +
-            '</div>' +
+            '<button class="b b-flag' + (an ? ' on' : '') + '" id="flag" type="button">' +
+              (an ? 'Von der Bestellliste nehmen' : 'Muss bestellt werden') +
+            '</button>' +
           '</div>');
     box.appendChild(wrap);
 
@@ -1050,19 +1045,9 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     var flagBtn = document.getElementById('flag');
     if (flagBtn) {
       flagBtn.addEventListener('click', function () {
-        var feld = document.getElementById('meldeMenge');
-        var m = feld ? parseInt(feld.value, 10) : NaN;
-        melden(a.code, !offen[a.code], false, (isNaN(m) || m < 0) ? 0 : m);
+        /* Die Menge oben gilt auch hier — was man braucht, hat man schon eingestellt */
+        melden(a.code, !offen[a.code], false, menge);
         renderArticle();
-      });
-    }
-    /* Menge nachtraeglich aendern, solange die Position offen ist */
-    var meldeFeld = document.getElementById('meldeMenge');
-    if (meldeFeld && offen[a.code]) {
-      meldeFeld.addEventListener('input', function () {
-        var m = parseInt(this.value, 10);
-        offen[a.code].menge = (isNaN(m) || m < 0) ? 0 : m;
-        save();
       });
     }
     var weBtn = document.getElementById('weBtn');
