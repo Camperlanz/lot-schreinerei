@@ -358,6 +358,32 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
 .cellbtns{display:flex; gap:7px; flex-wrap:wrap}
 
 /* ---------------- Bestellliste ---------------- */
+.abschnitt{margin-bottom:30px}
+.abschnitt:last-child{margin-bottom:0}
+.abschnitt-kopf{
+  display:flex; align-items:baseline; gap:11px; flex-wrap:wrap;
+  padding:0 2px 11px; margin-bottom:12px;
+  border-bottom:2px solid var(--text-strong);
+}
+.abschnitt-kopf h3{
+  margin:0; font:600 18px/1.2 var(--f-display); color:var(--text-strong);
+  letter-spacing:-.01em;
+}
+.abschnitt-kopf .zahl{
+  min-width:24px; height:24px; padding:0 8px; border-radius:var(--r-pill);
+  display:inline-grid; place-items:center;
+  font:600 12px/1 var(--f-mono); font-variant-numeric:tabular-nums;
+  background:var(--warn-bg); color:var(--warn-text); border:1px solid var(--warn-bd);
+}
+.abschnitt.unterwegs .abschnitt-kopf{border-bottom-color:var(--border-base)}
+.abschnitt.unterwegs .abschnitt-kopf h3{color:var(--text-muted)}
+.abschnitt.unterwegs .abschnitt-kopf .zahl{
+  background:var(--info-bg); color:var(--info-text); border-color:var(--info-bd);
+}
+.abschnitt-kopf p{
+  margin:0; width:100%; font:400 13px/1.5 var(--f-body); color:var(--text-faint);
+}
+
 .supplier + .supplier{margin-top:14px}
 .sup-head{
   display:flex; align-items:center; gap:12px; flex-wrap:wrap;
@@ -548,7 +574,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     <div class="head">
       <div>
         <h2>Bestellliste</h2>
-        <p>Was die Werkstatt gemeldet hat — nach Lieferant sortiert. Menge eintragen, Position streichen wenn erledigt.</p>
+        <p>Oben was noch zu bestellen ist, unten was schon unterwegs ist — je nach Lieferant sortiert.</p>
       </div>
     </div>
 
@@ -1193,33 +1219,57 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       return;
     }
 
+    var zuBestellen = liste.filter(function (a) { return offen[a.code].status === 'gemeldet'; });
+    var unterwegs   = liste.filter(function (a) { return offen[a.code].status === 'bestellt'; });
+
+    abschnitt(box, 'Zu bestellen', 'Was die Werkstatt gemeldet hat.', zuBestellen, false);
+    abschnitt(box, 'Schon bestellt', 'Unterwegs — beim Eintreffen die Stückzahl buchen.', unterwegs, true);
+
+    document.getElementById('orderSummary').hidden = false;
+    renderSummary();
+  }
+
+  /* Ein Abschnitt der Bestellliste, innen nach Lieferant gruppiert */
+  function abschnitt(box, titel, unterzeile, artikelListe, bestellt) {
+    if (!artikelListe.length) return;
+
+    var wrap = document.createElement('section');
+    wrap.className = 'abschnitt' + (bestellt ? ' unterwegs' : '');
+    wrap.innerHTML =
+      '<div class="abschnitt-kopf">' +
+        '<h3>' + esc(titel) + '</h3>' +
+        '<span class="zahl">' + artikelListe.length + '</span>' +
+        '<p>' + esc(unterzeile) + '</p>' +
+      '</div>';
+
     var nachLieferant = {};
-    liste.forEach(function (a) {
+    artikelListe.forEach(function (a) {
       if (!nachLieferant[a.lieferant]) nachLieferant[a.lieferant] = [];
       nachLieferant[a.lieferant].push(a);
     });
 
-    Object.keys(nachLieferant).forEach(function (lief) {
+    Object.keys(nachLieferant).sort(function (x, y) {
+      return x.localeCompare(y, 'de');
+    }).forEach(function (lief) {
       var gruppe = nachLieferant[lief];
-      var wartend = gruppe.filter(function (a) { return offen[a.code].status === 'gemeldet'; }).length;
 
       var group = document.createElement('div');
       group.className = 'supplier';
       var head = document.createElement('div');
       head.className = 'sup-head';
       head.innerHTML = '<h4>' + esc(lief) + '</h4>' +
-        '<span class="cnt">' + gruppe.length + ' Positionen</span>' +
-        (wartend
-          ? '<button class="b b-secondary b-sm" data-act="alle" data-lief="' + esc(lief) + '">' +
-            'Alle ' + wartend + ' als bestellt</button>'
-          : '');
+        '<span class="cnt">' + gruppe.length + (gruppe.length === 1 ? ' Position' : ' Positionen') + '</span>' +
+        (bestellt
+          ? ''
+          : '<button class="b b-secondary b-sm" data-act="alle" data-lief="' + esc(lief) + '">' +
+            (gruppe.length === 1 ? 'Als bestellt' : 'Alle ' + gruppe.length + ' als bestellt') +
+            '</button>');
       group.appendChild(head);
 
       var body = document.createElement('div');
       body.className = 'sup-body';
       gruppe.forEach(function (a) {
         var e = offen[a.code];
-        var bestellt = e.status === 'bestellt';
         var line = document.createElement('div');
         line.className = 'line' + (bestellt ? ' bestellt' : '');
         line.setAttribute('data-code', a.code);
@@ -1248,11 +1298,10 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
         body.appendChild(line);
       });
       group.appendChild(body);
-      box.appendChild(group);
+      wrap.appendChild(group);
     });
 
-    document.getElementById('orderSummary').hidden = false;
-    renderSummary();
+    box.appendChild(wrap);
   }
 
   /* einmalig registriert, nicht bei jedem Rendern erneut */
