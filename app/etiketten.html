@@ -360,12 +360,11 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
     <div class="panel-head">Bogenformat</div>
     <div class="panel-body">
       <p class="wordtipp">
-        <b>So findest du den passenden Bogen zum Kaufen:</b> in Word auf
-        <em>Sendungen → Etiketten → Optionen</em>, dort Hersteller
-        <em>Avery Zweckform</em> wählen und die Vorlage mit denselben Massen suchen.
-        Die Nummer, die dort steht, bestellst du im Bürobedarf — dann passt der Bogen
-        zu Word und zu dieser Seite. Alle vier Masse unten sind gängige
-        Universaletiketten, die es von mehreren Herstellern gibt.
+        <b>Eingestellt auf deinen Bogen:</b> Avery Zweckform <em>6122</em>,
+        70 × 36 mm, 24 Etiketten je Bogen. Die Masse stammen aus deiner
+        Word-Vorlage, die Vorschau stimmt damit millimetergenau überein.
+        In Word findest du denselben Bogen unter
+        <em>Sendungen → Etiketten → Optionen → Avery Zweckform → 6122</em>.
       </p>
       <div class="formate" id="formate" role="group" aria-label="Etikettenformat"></div>
 
@@ -459,18 +458,18 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
      ===================================================================== */
   var FORMATE = [
     {
-      key: 'a', name: '70 × 42,3 mm', masse: '21 Stück je Bogen · Empfehlung',
-      hinweis: 'Drei nebeneinander, sieben untereinander, randlos über den ganzen Bogen. Genug Platz für die volle Bezeichnung und einen 30-mm-Code.',
+      key: 'a', name: 'Avery Zweckform 6122', masse: '70 × 36 mm · 24 Stück je Bogen',
+      hinweis: 'Masse aus der Word-Vorlage übernommen: drei nebeneinander, acht untereinander, 4,5 mm Rand oben, sonst randlos. Dein Bogen.',
+      breite: 70, hoehe: 36, spalten: 3, zeilen: 8,
+      randOben: 4.5, randLinks: 0, abstandX: 0, abstandY: 0,
+      qr: 28, klein: false
+    },
+    {
+      key: 'b', name: '70 × 42,3 mm', masse: '21 Stück je Bogen',
+      hinweis: 'Etwas höher, dafür drei Etiketten weniger je Bogen — mehr Luft für lange Bezeichnungen.',
       breite: 70, hoehe: 42.3, spalten: 3, zeilen: 7,
       randOben: 0.45, randLinks: 0, abstandX: 0, abstandY: 0,
       qr: 30, klein: false
-    },
-    {
-      key: 'b', name: '70 × 36 mm', masse: '24 Stück je Bogen',
-      hinweis: 'Etwas flacher, dafür drei Etiketten mehr je Bogen.',
-      breite: 70, hoehe: 36, spalten: 3, zeilen: 8,
-      randOben: 4.5, randLinks: 0, abstandX: 0, abstandY: 0,
-      qr: 26, klein: false
     },
     {
       key: 'c', name: '105 × 42,3 mm', masse: '14 Stück je Bogen',
