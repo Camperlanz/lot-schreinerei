@@ -192,6 +192,16 @@ body{
 .eigenes-fuss{margin:0; font:400 13px/1.5 var(--f-body); color:var(--text-muted)}
 .eigenes-fuss.warnung{color:var(--err-text); font-weight:500}
 
+.bestaetigung-knoepfe{display:flex; gap:9px; margin-top:10px; flex-wrap:wrap}
+#bestaetigung[hidden]{display:none}
+
+.stand{
+  display:inline-block; padding:3px 9px; border-radius:var(--r-pill);
+  font:500 12px/1.4 var(--f-mono); white-space:nowrap;
+}
+.stand.offen{background:var(--warn-bg); color:var(--warn-text); border:1px solid var(--warn-bd)}
+.stand.fertig{background:var(--ok-bg); color:var(--ok-text); border:1px solid var(--ok-bd)}
+
 /* Raster fuer den angebrochenen Bogen */
 .hinweis-zeile{margin:0; font:400 14px/1.5 var(--f-body); color:var(--text-muted); max-width:70ch}
 .bogenraster{
@@ -418,6 +428,11 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
     </div>
     <div class="panel-body">
       <div class="filter">
+        <select id="statusFilter" aria-label="Nach Etikettenstand filtern">
+          <option value="offen">Noch ohne Etikett</option>
+          <option value="alle">Alle Artikel</option>
+          <option value="fertig">Etikett schon gedruckt</option>
+        </select>
         <select id="lieferantFilter" aria-label="Nach Lieferant filtern"></select>
         <input id="suche" type="search" placeholder="Nummer oder Bezeichnung" aria-label="Artikel suchen">
         <button class="b b-secondary b-sm" id="alle" type="button">Alle</button>
@@ -432,6 +447,7 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
               <th scope="col">Bezeichnung</th>
               <th scope="col">Lieferant</th>
               <th scope="col">Lagerort</th>
+              <th scope="col">Etikett</th>
               <th scope="col" style="width:96px">Anzahl</th>
             </tr>
           </thead>
@@ -465,9 +481,21 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
       <span class="free" id="bogenZahl"></span>
     </div>
     <div class="panel-body">
+      <div class="msg info" id="bestaetigung" data-show="1" hidden>
+        <span class="mark" aria-hidden="true"></span>
+        <span>
+          <b>Gedruckt?</b>
+          <span id="bestaetigungText"></span>
+          <span class="bestaetigung-knoepfe">
+            <button class="b b-primary b-sm" id="druckOk" type="button">Ja, vermerken</button>
+            <button class="b b-secondary b-sm" id="druckNein" type="button">Nein</button>
+          </span>
+        </span>
+      </div>
       <div class="aktionen">
         <button class="b b-primary" id="druckBtn" type="button">Drucken</button>
         <button class="b b-secondary" id="csvBtn" type="button">Tabelle für Word</button>
+        <button class="b b-secondary" id="standZuruecksetzen" type="button">Vermerk aufheben</button>
         <label class="aktionen hinweis" style="gap:8px">
           <input type="checkbox" id="schnitt" checked style="width:20px;height:20px;accent-color:var(--brand)">
           Schnittlinien anzeigen
@@ -549,6 +577,39 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
     });
+  }
+
+  /* =====================================================================
+     Welche Artikel haben schon ein Etikett?
+     Wird beim Drucken vermerkt — aber erst, nachdem der Druck bestätigt
+     wurde. Die App sieht nicht, ob wirklich Papier herauskam.
+     ===================================================================== */
+  var GEDRUCKT_KEY = 'lot.etiketten.gedruckt.v1';
+  var gedruckt = {};
+
+  (function ladeGedruckt() {
+    try {
+      var roh = window.localStorage.getItem(GEDRUCKT_KEY);
+      if (roh) gedruckt = JSON.parse(roh) || {};
+    } catch (e) { gedruckt = {}; }
+  })();
+
+  function sichereGedruckt() {
+    try { window.localStorage.setItem(GEDRUCKT_KEY, JSON.stringify(gedruckt)); }
+    catch (e) { /* Speicher gesperrt: gilt nur für diese Sitzung */ }
+  }
+
+  function heute() {
+    var d = new Date();
+    return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' +
+           d.getFullYear();
+  }
+
+  function etikettStand(code) {
+    if (!gedruckt[code]) {
+      return '<span class="stand offen">noch keins</span>';
+    }
+    return '<span class="stand fertig">' + esc(gedruckt[code]) + '</span>';
   }
 
   /* ---------- Hell / Dunkel ---------- */
@@ -696,9 +757,12 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
 
   function sichtbar() {
     var lief = lieferantFilter.value;
+    var stand = document.getElementById('statusFilter').value;
     var q = document.getElementById('suche').value.trim().toLowerCase();
     return artikel.filter(function (a) {
       if (lief && a.lieferant !== lief) return false;
+      if (stand === 'offen' && gedruckt[a.code]) return false;
+      if (stand === 'fertig' && !gedruckt[a.code]) return false;
       if (!q) return true;
       return (a.code + ' ' + a.name + ' ' + a.ort).toLowerCase().indexOf(q) !== -1;
     });
@@ -710,13 +774,26 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
     var liste = sichtbar();
 
     if (!artikel.length) {
-      tb.innerHTML = '<tr><td colspan="6"><div class="empty"><b>Keine Artikel erfasst</b>' +
+      tb.innerHTML = '<tr><td colspan="7"><div class="empty"><b>Keine Artikel erfasst</b>' +
         '<span>Zuerst unter „Artikel" anlegen, dann gibt es hier Etiketten.</span></div></td></tr>';
       return;
     }
     if (!liste.length) {
-      tb.innerHTML = '<tr><td colspan="6"><div class="empty"><b>Nichts gefunden</b>' +
-        '<span>Andere Suche oder anderen Lieferanten wählen.</span></div></td></tr>';
+      var stand = document.getElementById('statusFilter').value;
+      var q = document.getElementById('suche').value.trim();
+      var kopf, text;
+      if (stand === 'offen' && !q && !lieferantFilter.value) {
+        kopf = 'Alles etikettiert';
+        text = 'Jeder erfasste Artikel hat ein Etikett. Neue Artikel tauchen hier automatisch auf.';
+      } else if (stand === 'fertig' && !q && !lieferantFilter.value) {
+        kopf = 'Noch nichts gedruckt';
+        text = 'Bisher wurde für keinen Artikel ein Etikett vermerkt.';
+      } else {
+        kopf = 'Nichts gefunden';
+        text = 'Andere Suche, anderer Lieferant oder anderer Etikettenstand.';
+      }
+      tb.innerHTML = '<tr><td colspan="7"><div class="empty"><b>' + kopf + '</b>' +
+        '<span>' + text + '</span></div></td></tr>';
       return;
     }
 
@@ -731,6 +808,7 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
         '<td class="strong">' + esc(a.name) + '</td>' +
         '<td>' + esc(a.lieferant) + '</td>' +
         '<td>' + (a.ort ? esc(a.ort) : '<span style="color:var(--text-faint)">—</span>') + '</td>' +
+        '<td>' + etikettStand(a.code) + '</td>' +
         '<td class="anzahl"><input type="number" min="0" max="99" step="1" value="' + n +
           '" data-code="' + esc(a.code) + '" aria-label="Anzahl Etiketten ' + esc(a.name) + '"></td>';
       tb.appendChild(tr);
@@ -758,7 +836,21 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
     zeichneBogen();
   });
 
-  lieferantFilter.addEventListener('change', function () { renderListe(); });
+  lieferantFilter.addEventListener('change', function () { vorauswahl(); });
+  document.getElementById('statusFilter').addEventListener('change', function () { vorauswahl(); });
+
+  /* Beim Filterwechsel gleich sinnvoll vorwählen: was sichtbar ist, wird
+     gedruckt, alles andere nicht. Spart das Ankreuzen von Hand. */
+  function vorauswahl() {
+    var sicht = {};
+    sichtbar().forEach(function (a) { sicht[a.code] = true; });
+    artikel.forEach(function (a) {
+      gewaehlt[a.code] = sicht[a.code] ? Math.max(1, gewaehlt[a.code] || 1) : 0;
+    });
+    renderListe();
+    zeichneBogen();
+    renderRaster();
+  }
   document.getElementById('suche').addEventListener('input', renderListe);
 
   document.getElementById('alle').addEventListener('click', function () {
@@ -944,7 +1036,63 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
   }
 
   document.getElementById('druckBtn').addEventListener('click', function () {
+    var liste = zuDrucken();
     window.print();
+    /* Ob wirklich Papier herauskam, weiss die Seite nicht — deshalb fragen
+       statt einfach vermerken. */
+    if (!liste.length) return;
+    var codes = {};
+    liste.forEach(function (a) { codes[a.code] = true; });
+    offeneBestaetigung = Object.keys(codes);
+    zeigeBestaetigung();
+  });
+
+  var offeneBestaetigung = null;
+
+  function zeigeBestaetigung() {
+    var n = offeneBestaetigung.length;
+    var kasten = document.getElementById('bestaetigung');
+    document.getElementById('bestaetigungText').textContent =
+      n === 1
+        ? 'Ist das Etikett sauber herausgekommen? Dann wird der Artikel als erledigt vermerkt.'
+        : 'Sind die ' + n + ' Etiketten sauber herausgekommen? Dann werden die Artikel als erledigt vermerkt.';
+    kasten.hidden = false;
+    kasten.scrollIntoView({ block: 'nearest' });
+  }
+
+  document.getElementById('druckOk').addEventListener('click', function () {
+    if (!offeneBestaetigung) return;
+    var datum = heute();
+    offeneBestaetigung.forEach(function (code) { gedruckt[code] = datum; });
+    sichereGedruckt();
+    var n = offeneBestaetigung.length;
+    offeneBestaetigung = null;
+    document.getElementById('bestaetigung').hidden = true;
+    say('ok', 'Vermerkt. ',
+      n + (n === 1 ? ' Artikel hat' : ' Artikel haben') + ' jetzt ein Etikett, Stand ' + datum + '.');
+    renderListe();
+  });
+
+  document.getElementById('druckNein').addEventListener('click', function () {
+    offeneBestaetigung = null;
+    document.getElementById('bestaetigung').hidden = true;
+    say('warn', 'Nichts vermerkt. ',
+      'Die Artikel gelten weiter als ohne Etikett — du kannst gleich noch einmal drucken.');
+  });
+
+  /* Vermerk wieder aufheben, wenn ein Etikett verloren geht oder unleserlich wird */
+  document.getElementById('standZuruecksetzen').addEventListener('click', function () {
+    var betroffen = sichtbar().filter(function (a) { return gedruckt[a.code]; });
+    if (!betroffen.length) {
+      say('warn', 'Nichts zurückzusetzen. ', 'Keiner der angezeigten Artikel ist als gedruckt vermerkt.');
+      return;
+    }
+    betroffen.forEach(function (a) { delete gedruckt[a.code]; });
+    sichereGedruckt();
+    say('info', 'Zurückgesetzt. ',
+      betroffen.length + (betroffen.length === 1 ? ' Artikel gilt' : ' Artikel gelten') +
+      ' wieder als ohne Etikett.');
+    renderListe();
   });
 
   /* ---------- Tabelle für Word ---------- */
@@ -978,8 +1126,7 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
 
   /* ---------- Start ---------- */
   syncEigenes();
-  renderListe();
-  zeichneBogen();
+  vorauswahl();
   renderRaster();
 })();
 </script>
