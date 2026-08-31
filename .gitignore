@@ -2,3 +2,5 @@
 .vercel/
 Thumbs.db
 desktop.ini
+node_modules/
+vorlagen/qr_tmp/
