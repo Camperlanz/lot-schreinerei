@@ -114,6 +114,18 @@ input{
 input:hover{border-color:var(--border-strong)}
 input:focus{background:var(--bg-surface)}
 
+.mit-auge{position:relative; display:flex}
+.mit-auge input{padding-right:86px}
+.auge{
+  position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  min-height:44px; padding:0 13px; border:0; border-radius:var(--r-sm);
+  background:transparent; color:var(--text-muted); cursor:pointer;
+  font:500 13px/1 var(--f-body);
+}
+.auge:hover{color:var(--brand-text); background:var(--brand-quiet)}
+.note.passt{color:var(--ok-text); font-weight:500}
+.note.passtnicht{color:var(--err-text); font-weight:500}
+
 .staerke{display:flex; gap:5px; margin-top:2px}
 .staerke i{
   height:4px; flex:1; border-radius:2px; background:var(--border-subtle);
@@ -197,7 +209,10 @@ input:focus{background:var(--bg-surface)}
 
     <div class="field">
       <label for="passwort">Passwort</label>
-      <input id="passwort" type="password" autocomplete="new-password">
+      <div class="mit-auge">
+        <input id="passwort" type="password" autocomplete="new-password">
+        <button class="auge" id="zeigen" type="button" aria-label="Passwort anzeigen">Zeigen</button>
+      </div>
       <div class="staerke" id="staerke" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
       <span class="note" id="staerkeText">Mindestens acht Zeichen. Länger ist besser als komplizierter.</span>
     </div>
@@ -205,6 +220,7 @@ input:focus{background:var(--bg-surface)}
     <div class="field">
       <label for="passwort2">Passwort wiederholen</label>
       <input id="passwort2" type="password" autocomplete="new-password">
+      <span class="note" id="gleichHinweis"></span>
     </div>
 
     <button class="b b-primary" id="los" type="button">Zugang anlegen</button>
@@ -254,6 +270,31 @@ input:focus{background:var(--bg-surface)}
     ];
     document.getElementById('staerkeText').textContent = texte[punkte];
   });
+
+  /* Sichtbar machen — der beste Schutz gegen einen Tippfehler, den man
+     zweimal gleich macht und danach nicht mehr findet. */
+  var pw2 = document.getElementById('passwort2');
+  document.getElementById('zeigen').addEventListener('click', function () {
+    var versteckt = pw.type === 'password';
+    pw.type = pw2.type = versteckt ? 'text' : 'password';
+    this.textContent = versteckt ? 'Verbergen' : 'Zeigen';
+    this.setAttribute('aria-label', versteckt ? 'Passwort verbergen' : 'Passwort anzeigen');
+    pw.focus();
+  });
+
+  function pruefeGleich() {
+    var h = document.getElementById('gleichHinweis');
+    if (!pw2.value) { h.className = 'note'; h.textContent = ''; return; }
+    if (pw.value === pw2.value) {
+      h.className = 'note passt';
+      h.textContent = 'Stimmt überein.';
+    } else {
+      h.className = 'note passtnicht';
+      h.textContent = 'Die beiden sind noch verschieden.';
+    }
+  }
+  pw.addEventListener('input', pruefeGleich);
+  pw2.addEventListener('input', pruefeGleich);
 
   document.getElementById('los').addEventListener('click', async function () {
     var benutzer = document.getElementById('benutzer').value.trim().toLowerCase();
