@@ -13,7 +13,17 @@
 (function (global) {
   "use strict";
 
-  var ADRESSE = 'https://lot-api.ricarsanches16.workers.dev';
+  /* Wohin die App spricht. Laesst sich ueberschreiben — fuer Tests und
+     spaeter fuer den Umzug auf einen eigenen Server, ohne die Datei
+     anzufassen:  localStorage.setItem('lot.api', 'https://…')  */
+  var STANDARD_ADRESSE = 'https://lot-api.ricarsanches16.workers.dev';
+  var ADRESSE = (function () {
+    try {
+      var eigen = global.localStorage.getItem('lot.api');
+      if (eigen) return JSON.parse(eigen);
+    } catch (e) { /* nicht gesetzt oder Speicher gesperrt */ }
+    return STANDARD_ADRESSE;
+  })();
   var TOKEN_KEY = 'lot.token';
   var WARTEND_KEY = 'lot.wartend';
   var STAND_KEY = 'lot.stand';

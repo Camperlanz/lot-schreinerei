@@ -17,6 +17,10 @@
      POST /api/lieferant     anlegen und ändern
      POST /api/lieferant/weg
      POST /api/etikett       Etikettendruck vermerken oder aufheben
+     POST /api/meldung       Rueckmeldung aus der Werkstatt
+     GET  /api/meldungen     Liste - Buero alle, Werkstatt die eigenen
+     POST /api/meldung/status
+     POST /api/meldung/weg
    ========================================================================= */
 
 const JSON_KOPF = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -422,6 +426,56 @@ export default {
         );
         await db.batch(schritte);
         return raus(await standHolen(db));
+      }
+
+      /* ---------- Rückmeldungen ----------
+         Schreiben darf jeder Angemeldete. Lesen und bearbeiten nur das Büro;
+         wer aus der Werkstatt meldet, sieht seine eigenen Meldungen. */
+      if (pfad === '/api/meldung' && anfrage.method === 'POST') {
+        const { art, text, seite } = await anfrage.json();
+        const inhalt = String(text || '').trim();
+        if (inhalt.length < 5) {
+          return nein('Schreib bitte etwas mehr — in einem Satz, was fehlt oder stört.', 400);
+        }
+        if (inhalt.length > 2000) {
+          return nein('Das ist zu lang. Fasse es bitte kürzer.', 400);
+        }
+        const artOk = ['fehler', 'wunsch', 'frage'].indexOf(art) !== -1 ? art : 'wunsch';
+        await db.prepare(
+          'INSERT INTO meldungen (art, text, seite, wer) VALUES (?, ?, ?, ?)'
+        ).bind(artOk, inhalt, String(seite || '').slice(0, 60), ich.name).run();
+        return raus({ ok: true });
+      }
+
+      if (pfad === '/api/meldungen' && anfrage.method === 'GET') {
+        const nurEigene = ich.rolle !== 'buero';
+        const abfrage = nurEigene
+          ? db.prepare('SELECT * FROM meldungen WHERE wer = ? ORDER BY id DESC LIMIT 200').bind(ich.name)
+          : db.prepare('SELECT * FROM meldungen ORDER BY id DESC LIMIT 200');
+        const liste = await abfrage.all();
+        return raus({ meldungen: liste.results, ich: { name: ich.name, rolle: ich.rolle } });
+      }
+
+      if (pfad === '/api/meldung/status' && anfrage.method === 'POST') {
+        if (ich.rolle !== 'buero') return nein('Das darf nur das Büro.', 403);
+        const { id, status, antwort } = await anfrage.json();
+        const erlaubt = ['offen', 'angeschaut', 'erledigt', 'zurueckgestellt'];
+        if (erlaubt.indexOf(status) === -1) return nein('Unbekannter Stand.', 400);
+        await db.prepare(
+          `UPDATE meldungen
+              SET status = ?, antwort = ?, geaendert = datetime('now')
+            WHERE id = ?`
+        ).bind(status, String(antwort || '').slice(0, 2000), id).run();
+        const liste = await db.prepare('SELECT * FROM meldungen ORDER BY id DESC LIMIT 200').all();
+        return raus({ meldungen: liste.results });
+      }
+
+      if (pfad === '/api/meldung/weg' && anfrage.method === 'POST') {
+        if (ich.rolle !== 'buero') return nein('Das darf nur das Büro.', 403);
+        const { id } = await anfrage.json();
+        await db.prepare('DELETE FROM meldungen WHERE id = ?').bind(id).run();
+        const liste = await db.prepare('SELECT * FROM meldungen ORDER BY id DESC LIMIT 200').all();
+        return raus({ meldungen: liste.results });
       }
 
       return nein('Diesen Weg gibt es nicht: ' + pfad, 404);

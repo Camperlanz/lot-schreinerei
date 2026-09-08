@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lot — Rückmeldung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* =========================================================================
+   Lot — Rückmeldungen aus der Werkstatt
+   Tokens identisch zu design/tokens.css
+   ========================================================================= */
+:root{
+  --raw-o-50:#FFF4ED; --raw-o-100:#FFE4D3; --raw-o-200:#FFC5A3; --raw-o-300:#FFA96F;
+  --raw-o-400:#FF8A3D; --raw-o-500:#F26419; --raw-o-600:#D2500C; --raw-o-700:#A93C08;
+  --raw-o-800:#7C2C07; --raw-o-900:#4E1C05;
+  --raw-n-0:#FFFFFF; --raw-n-25:#FCFAF8; --raw-n-50:#FAF7F4; --raw-n-100:#F2EDE8;
+  --raw-n-200:#E4DCD4; --raw-n-300:#CDC3B9; --raw-n-400:#A79C91; --raw-n-500:#7E746A;
+  --raw-n-600:#5C554E; --raw-n-700:#423C36; --raw-n-800:#26211D; --raw-n-900:#171310;
+  --raw-n-950:#100D0B;
+  --raw-p-400:#4EB3B8; --raw-p-700:#0E5257; --raw-p-50:#E9F4F4;
+  --raw-ok-500:#1F7A4D; --raw-ok-400:#4FBF87; --raw-ok-50:#E7F4EC;
+  --raw-warn-700:#8A5A00; --raw-warn-400:#F5B301; --raw-warn-50:#FDF3DC;
+  --raw-err-600:#B3261E; --raw-err-400:#FF6B60; --raw-err-50:#FCEAE8;
+  --raw-info-600:#1A5F9E; --raw-info-400:#5FAEE8; --raw-info-50:#E8F1FA;
+}
+:root{
+  color-scheme:light;
+  --bg-app:var(--raw-n-50); --bg-surface:var(--raw-n-0); --bg-raised:var(--raw-n-25);
+  --bg-sunken:var(--raw-n-100);
+  --text-strong:var(--raw-n-900); --text-base:var(--raw-n-700);
+  --text-muted:var(--raw-n-600); --text-faint:var(--raw-n-500);
+  --text-on-brand:var(--raw-n-900);
+  --border-subtle:var(--raw-n-200); --border-base:var(--raw-n-300); --border-strong:var(--raw-n-400);
+  --brand:var(--raw-o-500); --brand-hover:var(--raw-o-600); --brand-active:var(--raw-o-700);
+  --brand-text:var(--raw-o-700); --brand-quiet:var(--raw-o-50); --brand-quiet-bd:var(--raw-o-200);
+  --focus-ring:var(--raw-o-600);
+  --ok-text:var(--raw-ok-500); --ok-bg:var(--raw-ok-50); --ok-bd:#A8D8BC;
+  --warn-text:var(--raw-warn-700); --warn-bg:var(--raw-warn-50); --warn-bd:#E8C777;
+  --err-text:var(--raw-err-600); --err-bg:var(--raw-err-50); --err-bd:#EFA9A3;
+  --info-text:var(--raw-info-600); --info-bg:var(--raw-info-50); --info-bd:#A9C9E6;
+  --shadow-1:0 1px 2px rgba(35,25,18,.07),0 1px 1px rgba(35,25,18,.04);
+  --r-sm:4px; --r-md:8px; --r-lg:12px; --r-pill:999px;
+  --touch-min:44px; --touch-comfort:56px;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,monospace;
+  --topbar-bg:var(--raw-n-900); --topbar-text:var(--raw-n-100); --topbar-muted:var(--raw-n-400);
+  --topbar-line:#332C26;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-raised:var(--raw-n-800);
+    --bg-sunken:#0A0806;
+    --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+    --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+    --text-on-brand:var(--raw-n-950);
+    --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+    --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+    --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+    --focus-ring:var(--raw-o-400);
+    --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+    --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+    --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+    --info-text:var(--raw-info-400); --info-bg:#0D2135; --info-bd:#22496E;
+    --shadow-1:0 1px 2px rgba(0,0,0,.5);
+    --topbar-bg:#0B0908; --topbar-line:#241F1B;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-raised:var(--raw-n-800);
+  --bg-sunken:#0A0806;
+  --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+  --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+  --text-on-brand:var(--raw-n-950);
+  --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+  --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+  --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+  --focus-ring:var(--raw-o-400);
+  --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+  --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+  --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+  --info-text:var(--raw-info-400); --info-bg:#0D2135; --info-bd:#22496E;
+  --shadow-1:0 1px 2px rgba(0,0,0,.5);
+  --topbar-bg:#0B0908; --topbar-line:#241F1B;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg-app); color:var(--text-base);
+  font:400 16px/1.6 var(--f-body); -webkit-font-smoothing:antialiased;
+}
+
+.topbar{
+  background:var(--topbar-bg); color:var(--topbar-text);
+  border-bottom:1px solid var(--topbar-line);
+  padding:12px 20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.brand{display:flex; align-items:baseline; gap:10px; margin-right:auto}
+.brand b{font:700 21px/1 var(--f-display); letter-spacing:.02em}
+.brand b span{color:var(--brand)}
+.brand em{
+  font:500 12px/1 var(--f-mono); font-style:normal; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--topbar-muted);
+  border-left:1px solid var(--topbar-line); padding-left:10px;
+}
+.ghost{
+  min-height:var(--touch-min); padding:0 13px;
+  display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+  background:transparent; color:var(--topbar-muted);
+  border:1px solid var(--topbar-line); border-radius:var(--r-pill);
+  font:500 13px/1 var(--f-body); cursor:pointer;
+}
+.ghost:hover{color:var(--topbar-text); border-color:var(--topbar-muted)}
+.ghost .dot{width:9px; height:9px; border-radius:50%; background:var(--brand)}
+
+.page{max-width:900px; margin:0 auto; padding:24px 20px 72px}
+.head{margin-bottom:18px}
+.head h2{margin:0; font:600 21px/1.2 var(--f-display); color:var(--text-strong); letter-spacing:-.01em}
+.head p{margin:6px 0 0; font-size:14px; color:var(--text-muted); max-width:64ch}
+
+.panel{
+  background:var(--bg-surface); border:1px solid var(--border-subtle);
+  border-radius:var(--r-lg); box-shadow:var(--shadow-1); margin-bottom:18px;
+}
+.panel-head{
+  padding:13px 16px; border-bottom:1px solid var(--border-subtle);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  font:600 11px/1 var(--f-mono); letter-spacing:.1em; text-transform:uppercase;
+  color:var(--text-muted);
+}
+.panel-head .free{
+  margin-left:auto; font:400 12px/1 var(--f-mono); letter-spacing:0;
+  text-transform:none; color:var(--text-faint);
+}
+.panel-body{padding:16px; display:flex; flex-direction:column; gap:15px}
+
+/* Art der Meldung */
+.arten{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:9px}
+.art{
+  min-height:64px; padding:12px 14px; cursor:pointer; text-align:left;
+  display:flex; flex-direction:column; justify-content:center; gap:3px;
+  background:var(--bg-surface); color:var(--text-strong);
+  border:1px solid var(--border-base); border-radius:var(--r-md);
+  font:500 15px/1.2 var(--f-body);
+}
+.art small{font:400 12px/1.35 var(--f-body); color:var(--text-faint)}
+.art:hover{border-color:var(--border-strong); background:var(--bg-sunken)}
+.art[aria-pressed="true"]{
+  border-color:var(--brand); background:var(--brand); color:var(--text-on-brand);
+  font-weight:600;
+}
+.art[aria-pressed="true"] small{color:var(--raw-o-900)}
+
+label.feld{
+  display:flex; flex-direction:column; gap:7px;
+  font:500 12px/1 var(--f-mono); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted);
+}
+textarea, input[type="text"], select{
+  width:100%; padding:12px 14px;
+  background:var(--bg-sunken); color:var(--text-strong);
+  border:1px solid var(--border-base); border-radius:var(--r-md);
+  font:400 16px/1.5 var(--f-body);
+}
+textarea{min-height:120px; resize:vertical}
+select{min-height:var(--touch-min); padding:0 12px}
+textarea:hover, input:hover, select:hover{border-color:var(--border-strong)}
+textarea:focus, input:focus, select:focus{background:var(--bg-surface)}
+.zaehler{font:400 12px/1 var(--f-mono); color:var(--text-faint); text-align:right}
+
+.b{
+  min-height:var(--touch-comfort); padding:0 20px; border-radius:var(--r-md);
+  border:1px solid transparent; cursor:pointer; font:600 16px/1 var(--f-body);
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  text-decoration:none;
+}
+.b-primary{background:var(--brand); color:var(--text-on-brand)}
+.b-primary:hover{background:var(--brand-hover)}
+.b-secondary{background:var(--bg-surface); color:var(--text-strong); border-color:var(--border-base)}
+.b-secondary:hover{background:var(--bg-sunken); border-color:var(--border-strong)}
+.b-sm{min-height:var(--touch-min); padding:0 13px; font-size:14px}
+.b[disabled]{background:var(--bg-sunken); color:var(--text-faint); border-color:var(--border-subtle); cursor:not-allowed}
+
+/* Liste der Meldungen */
+.filterzeile{display:flex; gap:9px; flex-wrap:wrap; align-items:center}
+.liste{display:flex; flex-direction:column}
+.eintrag{
+  padding:15px 16px; border-bottom:1px solid var(--border-subtle);
+  display:flex; flex-direction:column; gap:9px;
+}
+.eintrag:last-child{border-bottom:0}
+.eintrag.erledigt{opacity:.6}
+.kopfzeile{display:flex; gap:9px; align-items:center; flex-wrap:wrap}
+.pill{
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+  padding:4px 11px 4px 9px; border-radius:var(--r-pill);
+  font:500 12px/1.4 var(--f-body); border:1px solid;
+}
+.pill::before{content:""; width:7px; height:7px; border-radius:50%; background:currentColor; flex:none}
+.pill.fehler{color:var(--err-text); background:var(--err-bg); border-color:var(--err-bd)}
+.pill.wunsch{color:var(--info-text); background:var(--info-bg); border-color:var(--info-bd)}
+.pill.frage{color:var(--warn-text); background:var(--warn-bg); border-color:var(--warn-bd)}
+.pill.offen{color:var(--warn-text); background:var(--warn-bg); border-color:var(--warn-bd)}
+.pill.angeschaut{color:var(--info-text); background:var(--info-bg); border-color:var(--info-bd)}
+.pill.erledigt{color:var(--ok-text); background:var(--ok-bg); border-color:var(--ok-bd)}
+.pill.zurueckgestellt{color:var(--text-muted); background:var(--bg-sunken); border-color:var(--border-base)}
+.wannwer{margin-left:auto; font:400 12px/1.4 var(--f-mono); color:var(--text-faint); white-space:nowrap}
+.eintrag .text{
+  margin:0; font-size:15px; line-height:1.6; color:var(--text-strong);
+  white-space:pre-wrap; word-break:break-word;
+}
+.eintrag .antwort{
+  margin:0; padding:10px 13px; border-radius:var(--r-sm);
+  background:var(--bg-sunken); border-left:3px solid var(--brand);
+  font-size:14px; line-height:1.55; color:var(--text-base);
+  white-space:pre-wrap;
+}
+.eintrag .antwort b{display:block; color:var(--text-strong); font-weight:600; margin-bottom:2px}
+.werkzeuge{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+.werkzeuge select{width:auto; min-width:150px}
+
+.msg{
+  display:none; gap:10px; align-items:flex-start;
+  padding:12px 14px; border-radius:var(--r-md); border:1px solid;
+  font-size:14px; line-height:1.5; margin-bottom:18px;
+}
+.msg[data-show="1"]{display:flex}
+.msg.ok{color:var(--ok-text); background:var(--ok-bg); border-color:var(--ok-bd)}
+.msg.warn{color:var(--warn-text); background:var(--warn-bg); border-color:var(--warn-bd)}
+.msg.err{color:var(--err-text); background:var(--err-bg); border-color:var(--err-bd)}
+.msg .mark{flex:none; width:9px; height:9px; border-radius:50%; background:currentColor; margin-top:7px}
+.msg b{display:block; font-weight:600}
+
+.empty{
+  padding:34px 20px; text-align:center; color:var(--text-faint);
+  display:flex; flex-direction:column; gap:8px; align-items:center;
+}
+.empty b{color:var(--text-muted); font:600 16px/1.3 var(--f-body)}
+
+.foot{
+  margin-top:24px; padding-top:14px; border-top:1px solid var(--border-subtle);
+  font:400 12px/1.6 var(--f-mono); color:var(--text-faint);
+  display:flex; flex-wrap:wrap; gap:8px 20px;
+}
+
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid var(--focus-ring); outline-offset:2px; border-radius:var(--r-sm);
+}
+</style>
+
+<header class="topbar">
+  <div class="brand"><b>LO<span>T</span></b><em>Rückmeldung</em></div>
+  <a class="ghost" href="bestellung.html">Zurück zur Bestellung</a>
+  <button class="ghost" id="themeBtn" type="button">
+    <span class="dot" aria-hidden="true"></span><span id="themeLabel">Dunkel</span>
+  </button>
+</header>
+
+<main class="page">
+
+  <div class="head">
+    <h2>Was fehlt, was stört?</h2>
+    <p id="einleitung">
+      Wenn dir beim Arbeiten etwas auffällt — ein Fehler, ein Umweg, etwas das
+      fehlt — schreib es hier auf. Am besten gleich, solange es frisch ist.
+    </p>
+  </div>
+
+  <div class="msg" id="msg" role="status" aria-live="polite">
+    <span class="mark" aria-hidden="true"></span>
+    <span><b id="msgTitle"></b><span id="msgText"></span></span>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">Neue Rückmeldung</div>
+    <div class="panel-body">
+      <div class="arten" id="arten" role="group" aria-label="Art der Rückmeldung"></div>
+
+      <label class="feld" for="text">
+        Was ist los?
+        <textarea id="text" maxlength="2000"
+                  placeholder="Zum Beispiel: Beim Scannen springt das Feld zurück, wenn die Halle das WLAN verliert."></textarea>
+      </label>
+      <div class="zaehler" id="zaehler">0 Zeichen</div>
+
+      <label class="feld" for="seite">
+        Wo ist es aufgefallen?
+        <select id="seite">
+          <option value="">Keine Angabe</option>
+          <option value="Scannen">Scannen</option>
+          <option value="Lager">Lager</option>
+          <option value="Bestellen">Bestellen</option>
+          <option value="Artikel">Artikel</option>
+          <option value="Lieferanten">Lieferanten</option>
+          <option value="Etiketten">Etiketten</option>
+          <option value="Anmeldung">Anmeldung</option>
+          <option value="Etwas anderes">Etwas anderes</option>
+        </select>
+      </label>
+
+      <div>
+        <button class="b b-primary" id="senden" type="button">Abschicken</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span id="listenTitel">Meine Rückmeldungen</span>
+      <span class="free" id="anzahl"></span>
+    </div>
+    <div class="panel-body" id="filterBox" hidden>
+      <div class="filterzeile">
+        <select id="statusFilter" aria-label="Nach Stand filtern">
+          <option value="offen">Nur offene</option>
+          <option value="alle">Alle</option>
+          <option value="angeschaut">Angeschaut</option>
+          <option value="erledigt">Erledigt</option>
+          <option value="zurueckgestellt">Zurückgestellt</option>
+        </select>
+        <select id="artFilter" aria-label="Nach Art filtern">
+          <option value="">Alle Arten</option>
+          <option value="fehler">Fehler</option>
+          <option value="wunsch">Wunsch</option>
+          <option value="frage">Frage</option>
+        </select>
+      </div>
+    </div>
+    <div class="liste" id="liste"></div>
+  </div>
+
+  <div class="foot">
+    <span>Lot 0.1.1</span>
+    <span id="wer"></span>
+  </div>
+</main>
+
+<script src="verbindung.js?v=6772b299"></script>
+<script>
+(function () {
+  "use strict";
+
+  var ARTEN = [
+    { key: 'fehler', name: 'Etwas ist kaputt', note: 'Es funktioniert nicht wie es soll.' },
+    { key: 'wunsch', name: 'Etwas fehlt',      note: 'Ein Wunsch oder eine Verbesserung.' },
+    { key: 'frage',  name: 'Ich komme nicht weiter', note: 'Eine Frage zur Bedienung.' }
+  ];
+
+  var root = document.documentElement;
+  var art = 'wunsch';
+  var meldungen = [];
+  var ich = LotVerbindung.ich();
+  var istBuero = ich && ich.rolle === 'buero';
+
+  if (!LotVerbindung.angemeldet()) {
+    location.href = 'login.html';
+    return;
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+
+  /* ---------- Hell / Dunkel ---------- */
+  var themeBtn = document.getElementById('themeBtn');
+  var themeLabel = document.getElementById('themeLabel');
+  function systemDark(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function isDark(){
+    var t = root.getAttribute('data-theme');
+    if (t === 'dark') return true;
+    if (t === 'light') return false;
+    return systemDark();
+  }
+  function syncTheme(){ themeLabel.textContent = isDark() ? 'Hell' : 'Dunkel'; }
+  themeBtn.addEventListener('click', function(){
+    root.setAttribute('data-theme', isDark() ? 'light' : 'dark');
+    syncTheme();
+  });
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+  }
+  syncTheme();
+
+  /* ---------- Meldungen ---------- */
+  var msg = document.getElementById('msg');
+  function say(kind, titel, text) {
+    msg.className = 'msg ' + kind;
+    msg.setAttribute('data-show', '1');
+    document.getElementById('msgTitle').textContent = titel;
+    document.getElementById('msgText').textContent = text;
+  }
+
+  /* ---------- Art wählen ---------- */
+  var artenBox = document.getElementById('arten');
+  ARTEN.forEach(function (a) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'art';
+    b.setAttribute('data-key', a.key);
+    b.setAttribute('aria-pressed', a.key === art ? 'true' : 'false');
+    b.innerHTML = '<span>' + esc(a.name) + '</span><small>' + esc(a.note) + '</small>';
+    artenBox.appendChild(b);
+  });
+  artenBox.addEventListener('click', function (e) {
+    var b = e.target.closest('.art');
+    if (!b) return;
+    art = b.getAttribute('data-key');
+    Array.prototype.forEach.call(artenBox.querySelectorAll('.art'), function (x) {
+      x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+    });
+  });
+
+  /* ---------- Zeichenzähler ---------- */
+  var feld = document.getElementById('text');
+  feld.addEventListener('input', function () {
+    var n = this.value.length;
+    document.getElementById('zaehler').textContent =
+      n + ' Zeichen' + (n > 1900 ? ' — bald ist Schluss bei 2000' : '');
+  });
+
+  /* ---------- Abschicken ---------- */
+  document.getElementById('senden').addEventListener('click', async function () {
+    var text = feld.value.trim();
+    if (text.length < 5) {
+      say('warn', 'Noch zu kurz. ', 'Schreib in einem Satz, was fehlt oder stört.');
+      feld.focus();
+      return;
+    }
+    this.disabled = true;
+    var alterText = this.textContent;
+    this.textContent = 'Wird gesendet …';
+    try {
+      await LotVerbindung.ruf('/api/meldung', {
+        art: art,
+        text: text,
+        seite: document.getElementById('seite').value
+      });
+      feld.value = '';
+      document.getElementById('zaehler').textContent = '0 Zeichen';
+      say('ok', 'Danke. ',
+        istBuero
+          ? 'Steht in der Liste.'
+          : 'Ricardo sieht es in der Liste und meldet sich, wenn es erledigt ist.');
+      await laden();
+    } catch (fehler) {
+      say(fehler.ohneNetz ? 'warn' : 'err',
+          fehler.ohneNetz ? 'Keine Verbindung. ' : 'Hat nicht geklappt. ',
+          fehler.ohneNetz
+            ? 'Schreib es dir kurz auf und schick es, wenn das Netz wieder da ist.'
+            : fehler.message);
+    }
+    this.disabled = false;
+    this.textContent = alterText;
+  });
+
+  /* ---------- Liste ---------- */
+  async function laden() {
+    try {
+      var d = await LotVerbindung.ruf('/api/meldungen');
+      meldungen = d.meldungen || [];
+      render();
+    } catch (fehler) {
+      if (fehler.nichtAngemeldet) { location.href = 'login.html'; return; }
+      document.getElementById('liste').innerHTML =
+        '<div class="empty"><b>Liste nicht erreichbar</b><span>' + esc(fehler.message) + '</span></div>';
+    }
+  }
+
+  function datum(s) {
+    if (!s) return '';
+    var d = new Date(s.replace(' ', 'T') + (s.indexOf('Z') === -1 ? 'Z' : ''));
+    if (isNaN(d)) return s;
+    return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '. ' +
+           ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+
+  var ARTNAME = { fehler: 'Kaputt', wunsch: 'Wunsch', frage: 'Frage' };
+  var STANDNAME = {
+    offen: 'Offen', angeschaut: 'Angeschaut',
+    erledigt: 'Erledigt', zurueckgestellt: 'Zurückgestellt'
+  };
+
+  function render() {
+    var box = document.getElementById('liste');
+    box.innerHTML = '';
+
+    var stand = document.getElementById('statusFilter').value;
+    var artF = document.getElementById('artFilter').value;
+    var liste = meldungen.filter(function (m) {
+      if (istBuero && stand !== 'alle' && m.status !== stand) return false;
+      if (artF && m.art !== artF) return false;
+      return true;
+    });
+
+    document.getElementById('anzahl').textContent =
+      liste.length === 1 ? '1 Eintrag' : liste.length + ' Einträge';
+
+    if (!meldungen.length) {
+      box.innerHTML = '<div class="empty"><b>Noch nichts gemeldet</b>' +
+        '<span>' + (istBuero
+          ? 'Sobald jemand etwas meldet, steht es hier.'
+          : 'Deine Rückmeldungen erscheinen hier, sobald du eine geschrieben hast.') +
+        '</span></div>';
+      return;
+    }
+    if (!liste.length) {
+      box.innerHTML = '<div class="empty"><b>Nichts in dieser Auswahl</b>' +
+        '<span>Anderen Stand oder andere Art wählen.</span></div>';
+      return;
+    }
+
+    liste.forEach(function (m) {
+      var e = document.createElement('div');
+      e.className = 'eintrag' + (m.status === 'erledigt' ? ' erledigt' : '');
+      e.setAttribute('data-id', m.id);
+
+      var werkzeuge = '';
+      if (istBuero) {
+        werkzeuge =
+          '<div class="werkzeuge">' +
+            '<select data-rolle="stand" aria-label="Stand ändern">' +
+              Object.keys(STANDNAME).map(function (k) {
+                return '<option value="' + k + '"' + (m.status === k ? ' selected' : '') + '>' +
+                       STANDNAME[k] + '</option>';
+              }).join('') +
+            '</select>' +
+            '<button class="b b-secondary b-sm" data-rolle="antworten">Antwort schreiben</button>' +
+            '<button class="b b-secondary b-sm" data-rolle="weg">Löschen</button>' +
+          '</div>';
+      }
+
+      e.innerHTML =
+        '<div class="kopfzeile">' +
+          '<span class="pill ' + esc(m.art) + '">' + (ARTNAME[m.art] || m.art) + '</span>' +
+          '<span class="pill ' + esc(m.status) + '">' + (STANDNAME[m.status] || m.status) + '</span>' +
+          (m.seite ? '<span class="pill zurueckgestellt">' + esc(m.seite) + '</span>' : '') +
+          '<span class="wannwer">' + esc(m.wer) + ' · ' + datum(m.wann) + '</span>' +
+        '</div>' +
+        '<p class="text">' + esc(m.text) + '</p>' +
+        (m.antwort ? '<p class="antwort"><b>Antwort</b>' + esc(m.antwort) + '</p>' : '') +
+        werkzeuge;
+      box.appendChild(e);
+    });
+  }
+
+  document.getElementById('statusFilter').addEventListener('change', render);
+  document.getElementById('artFilter').addEventListener('change', render);
+
+  /* ---------- Bearbeiten (nur Büro) ---------- */
+  document.getElementById('liste').addEventListener('change', async function (e) {
+    if (e.target.getAttribute('data-rolle') !== 'stand') return;
+    var id = +e.target.closest('.eintrag').getAttribute('data-id');
+    var m = meldungen.filter(function (x) { return x.id === id; })[0];
+    await setzeStand(id, e.target.value, m ? m.antwort : '');
+  });
+
+  document.getElementById('liste').addEventListener('click', async function (e) {
+    var knopf = e.target.closest('button[data-rolle]');
+    if (!knopf) return;
+    var eintrag = knopf.closest('.eintrag');
+    var id = +eintrag.getAttribute('data-id');
+    var m = meldungen.filter(function (x) { return x.id === id; })[0];
+    if (!m) return;
+
+    if (knopf.getAttribute('data-rolle') === 'antworten') {
+      var antwort = prompt('Antwort an ' + m.wer + ':', m.antwort || '');
+      if (antwort === null) return;
+      await setzeStand(id, m.status, antwort);
+      return;
+    }
+    if (knopf.getAttribute('data-rolle') === 'weg') {
+      if (knopf.textContent !== 'Wirklich löschen?') {
+        knopf.textContent = 'Wirklich löschen?';
+        setTimeout(function () { knopf.textContent = 'Löschen'; }, 4000);
+        return;
+      }
+      try {
+        var d = await LotVerbindung.ruf('/api/meldung/weg', { id: id });
+        meldungen = d.meldungen || [];
+        render();
+        say('ok', 'Gelöscht. ', 'Der Eintrag ist weg.');
+      } catch (fehler) { say('err', 'Hat nicht geklappt. ', fehler.message); }
+    }
+  });
+
+  async function setzeStand(id, status, antwort) {
+    try {
+      var d = await LotVerbindung.ruf('/api/meldung/status',
+        { id: id, status: status, antwort: antwort || '' });
+      meldungen = d.meldungen || [];
+      render();
+      say('ok', 'Gespeichert. ', 'Stand steht jetzt auf ' + (STANDNAME[status] || status) + '.');
+    } catch (fehler) {
+      say('err', 'Hat nicht geklappt. ', fehler.message);
+    }
+  }
+
+  /* ---------- Start ---------- */
+  if (istBuero) {
+    document.getElementById('listenTitel').textContent = 'Alle Rückmeldungen';
+    document.getElementById('filterBox').hidden = false;
+    document.getElementById('einleitung').textContent =
+      'Hier laufen die Rückmeldungen aus der Werkstatt zusammen. Stand setzen, ' +
+      'antworten, abhaken — wer gemeldet hat, sieht die Antwort bei sich.';
+  }
+  document.getElementById('wer').textContent = ich ? 'angemeldet als ' + ich.name : '';
+  laden();
+})();
+</script>
