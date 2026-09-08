@@ -60,7 +60,11 @@
     var inhalt = null;
     try { inhalt = await antwort.json(); } catch (e) { inhalt = null; }
 
+    /* Beim Anmelden heisst 401 "Passwort falsch", sonst "Sitzung abgelaufen" */
     if (antwort.status === 401) {
+      if (optionen.ohneAnmeldung) {
+        throw new Error((inhalt && inhalt.fehler) || 'Benutzername oder Passwort stimmt nicht.');
+      }
       loesche(TOKEN_KEY);
       var abgelaufen = new Error('Die Anmeldung ist abgelaufen. Bitte neu anmelden.');
       abgelaufen.nichtAngemeldet = true;

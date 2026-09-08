@@ -414,8 +414,8 @@ input:focus{background:var(--bg-surface)}
         </form>
 
         <div class="card-foot">
-          <span>Entwurf ohne Anmeldedienst</span>
-          <span>Test: ricardo / lot</span>
+          <span>Lot 0.2</span>
+          <span id="netzstand">verbunden</span>
         </div>
       </div>
     </div>
@@ -427,6 +427,7 @@ input:focus{background:var(--bg-surface)}
   </main>
 </div>
 
+<script src="verbindung.js?v=ce4cfd90"></script>
 <script>
 (function () {
   "use strict";
@@ -536,7 +537,9 @@ input:focus{background:var(--bg-surface)}
     if (field) field.focus();
   }
 
-  document.getElementById('loginForm').addEventListener('submit', function (e) {
+  var knopf = document.getElementById('submitBtn');
+
+  document.getElementById('loginForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     if (!user.value.trim()) {
       fail('Benutzername fehlt. ', 'Trage den Namen ein, mit dem du angelegt wurdest.', user);
@@ -546,17 +549,61 @@ input:focus{background:var(--bg-surface)}
       fail('Passwort fehlt. ', 'Ohne Passwort geht es nicht weiter.', pw);
       return;
     }
-    if (user.value.trim().toLowerCase() !== 'ricardo' || pw.value !== 'lot') {
-      fail('Anmeldung nicht möglich. ', 'Benutzername oder Passwort stimmt nicht.', pw);
+
+    knopf.disabled = true;
+    var alterText = knopf.textContent;
+    knopf.textContent = 'Wird geprüft …';
+    try {
+      var d = await LotVerbindung.anmelden(user.value.trim(), pw.value);
+      say('ok', 'Angemeldet. ', current.name + ' wird geöffnet …');
       pw.value = '';
-      return;
+      /* Was ohne Netz gebucht wurde, gleich nachreichen */
+      LotVerbindung.versuchNachzureichen();
+      setTimeout(function () { location.href = ziel(); }, 600);
+    } catch (fehler) {
+      knopf.disabled = false;
+      knopf.textContent = alterText;
+      if (fehler.ohneNetz) {
+        fail('Keine Verbindung. ',
+             'Der Server ist gerade nicht erreichbar — Netz prüfen und nochmal versuchen.', user);
+      } else {
+        fail('Anmeldung nicht möglich. ', fehler.message, pw);
+        pw.value = '';
+      }
     }
-    say('ok', 'Angemeldet. ', current.name + ' wird geöffnet.');
   });
 
+  /* Wohin nach der Anmeldung — richtet sich nach dem gewählten Bereich */
+  function ziel() {
+    return current.key === 'bestellung' ? 'bestellung.html' : 'bestellung.html';
+  }
+
+  /* Wer schon angemeldet ist, muss sich nicht nochmal anmelden */
+  if (LotVerbindung.angemeldet()) {
+    var wer = LotVerbindung.ich();
+    say('ok', 'Schon angemeldet. ',
+        (wer ? wer.name : 'Du') + ' — es geht gleich weiter …');
+    setTimeout(function () { location.href = ziel(); }, 900);
+  }
+
   document.getElementById('forgot').addEventListener('click', function () {
-    say('warn', 'Noch nicht eingerichtet. ',
-        'Das Zurücksetzen kommt, sobald der Anmeldedienst steht.');
+    say('warn', 'Selbst zurücksetzen geht noch nicht. ',
+        'Melde dich bei Ricardo — er kann im Büro ein neues Passwort setzen.');
   });
+
+  /* ---------- Zeigen, ob der Server erreichbar ist ---------- */
+  function netzstand() {
+    var feld = document.getElementById('netzstand');
+    if (!feld) return;
+    var wartend = LotVerbindung.anzahlWartend();
+    if (!navigator.onLine) {
+      feld.textContent = wartend ? 'ohne Netz · ' + wartend + ' Buchungen warten' : 'ohne Netz';
+    } else {
+      feld.textContent = wartend ? wartend + ' Buchungen warten' : 'verbunden';
+    }
+  }
+  window.addEventListener('online', netzstand);
+  window.addEventListener('offline', netzstand);
+  netzstand();
 })();
 </script>
