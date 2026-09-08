@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lot — Ersteinrichtung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --raw-o-50:#FFF4ED; --raw-o-200:#FFC5A3; --raw-o-400:#FF8A3D; --raw-o-500:#F26419;
+  --raw-o-600:#D2500C; --raw-o-700:#A93C08;
+  --raw-n-0:#FFFFFF; --raw-n-50:#FAF7F4; --raw-n-100:#F2EDE8; --raw-n-200:#E4DCD4;
+  --raw-n-300:#CDC3B9; --raw-n-400:#A79C91; --raw-n-500:#7E746A; --raw-n-600:#5C554E;
+  --raw-n-700:#423C36; --raw-n-800:#26211D; --raw-n-900:#171310; --raw-n-950:#100D0B;
+  --raw-ok-500:#1F7A4D; --raw-ok-400:#4FBF87; --raw-ok-50:#E7F4EC;
+  --raw-warn-700:#8A5A00; --raw-warn-400:#F5B301; --raw-warn-50:#FDF3DC;
+  --raw-err-600:#B3261E; --raw-err-400:#FF6B60; --raw-err-50:#FCEAE8;
+}
+:root{
+  color-scheme:light;
+  --bg-app:var(--raw-n-50); --bg-surface:var(--raw-n-0); --bg-sunken:var(--raw-n-100);
+  --text-strong:var(--raw-n-900); --text-base:var(--raw-n-700);
+  --text-muted:var(--raw-n-600); --text-faint:var(--raw-n-500);
+  --text-on-brand:var(--raw-n-900);
+  --border-subtle:var(--raw-n-200); --border-base:var(--raw-n-300); --border-strong:var(--raw-n-400);
+  --brand:var(--raw-o-500); --brand-hover:var(--raw-o-600); --brand-active:var(--raw-o-700);
+  --brand-text:var(--raw-o-700); --brand-quiet:var(--raw-o-50); --brand-quiet-bd:var(--raw-o-200);
+  --focus-ring:var(--raw-o-600);
+  --ok-text:var(--raw-ok-500); --ok-bg:var(--raw-ok-50); --ok-bd:#A8D8BC;
+  --warn-text:var(--raw-warn-700); --warn-bg:var(--raw-warn-50); --warn-bd:#E8C777;
+  --err-text:var(--raw-err-600); --err-bg:var(--raw-err-50); --err-bd:#EFA9A3;
+  --shadow-2:0 2px 6px rgba(35,25,18,.09),0 8px 20px rgba(35,25,18,.06);
+  --r-sm:4px; --r-md:8px; --r-lg:12px; --r-pill:999px;
+  --touch-comfort:56px; --touch-min:44px;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,monospace;
+  --stage-bg:var(--raw-n-900); --stage-text:var(--raw-n-100); --stage-muted:var(--raw-n-400);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-sunken:#0A0806;
+    --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+    --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+    --text-on-brand:var(--raw-n-950);
+    --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+    --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+    --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+    --focus-ring:var(--raw-o-400);
+    --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+    --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+    --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+    --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
+    --stage-bg:#0B0908;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg-app:var(--raw-n-950); --bg-surface:var(--raw-n-900); --bg-sunken:#0A0806;
+  --text-strong:var(--raw-n-100); --text-base:#DFD8D1;
+  --text-muted:var(--raw-n-300); --text-faint:var(--raw-n-400);
+  --text-on-brand:var(--raw-n-950);
+  --border-subtle:#2E2823; --border-base:var(--raw-n-700); --border-strong:var(--raw-n-600);
+  --brand-hover:var(--raw-o-400); --brand-active:var(--raw-o-300);
+  --brand-text:var(--raw-o-400); --brand-quiet:#2A1810; --brand-quiet-bd:#5A3218;
+  --focus-ring:var(--raw-o-400);
+  --ok-text:var(--raw-ok-400); --ok-bg:#0E2B1C; --ok-bd:#1F5638;
+  --warn-text:var(--raw-warn-400); --warn-bg:#2E2205; --warn-bd:#6B5008;
+  --err-text:var(--raw-err-400); --err-bg:#2E1210; --err-bd:#6E2A24;
+  --shadow-2:0 2px 6px rgba(0,0,0,.55),0 10px 24px rgba(0,0,0,.4);
+  --stage-bg:#0B0908;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg-app); color:var(--text-base);
+  font:400 16px/1.6 var(--f-body); -webkit-font-smoothing:antialiased;
+}
+.top{background:var(--stage-bg); color:var(--stage-text); padding:26px 24px}
+.top-in{max-width:640px; margin:0 auto; display:flex; align-items:center; gap:14px}
+.mark{width:38px; height:38px; border-radius:4px; background:var(--brand); flex:none}
+h1{margin:0; font:700 30px/1 var(--f-display); letter-spacing:.02em}
+h1 span{color:var(--brand)}
+.top em{
+  font:500 12px/1 var(--f-mono); font-style:normal; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--stage-muted);
+}
+
+main{max-width:640px; margin:0 auto; padding:28px 24px 70px}
+.karte{
+  background:var(--bg-surface); border:1px solid var(--border-subtle);
+  border-radius:var(--r-lg); box-shadow:var(--shadow-2);
+  padding:26px; display:flex; flex-direction:column; gap:18px;
+}
+h2{margin:0; font:600 22px/1.25 var(--f-display); color:var(--text-strong); letter-spacing:-.01em}
+p{margin:0; font-size:15px; line-height:1.6; color:var(--text-base); max-width:62ch}
+p.klein{font-size:14px; color:var(--text-muted)}
+
+.field{display:flex; flex-direction:column; gap:7px}
+.field label{
+  font:500 12px/1 var(--f-mono); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted);
+}
+.field .note{font:400 13px/1.45 var(--f-body); color:var(--text-faint)}
+input{
+  width:100%; min-height:var(--touch-comfort); padding:0 14px;
+  background:var(--bg-sunken); color:var(--text-strong);
+  border:1px solid var(--border-base); border-radius:var(--r-md);
+  font:400 16px/1 var(--f-body);
+}
+input:hover{border-color:var(--border-strong)}
+input:focus{background:var(--bg-surface)}
+
+.staerke{display:flex; gap:5px; margin-top:2px}
+.staerke i{
+  height:4px; flex:1; border-radius:2px; background:var(--border-subtle);
+}
+.staerke i.an{background:var(--ok-text)}
+.staerke i.mittel{background:var(--warn-text)}
+.staerke i.schwach{background:var(--err-text)}
+
+.b{
+  min-height:var(--touch-comfort); padding:0 22px; border-radius:var(--r-md);
+  border:1px solid transparent; cursor:pointer; font:600 16px/1 var(--f-body);
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  text-decoration:none;
+}
+.b-primary{background:var(--brand); color:var(--text-on-brand); width:100%}
+.b-primary:hover{background:var(--brand-hover)}
+.b-primary:active{background:var(--brand-active); color:#fff}
+.b[disabled]{background:var(--bg-sunken); color:var(--text-faint); border-color:var(--border-subtle); cursor:not-allowed}
+.b-secondary{background:var(--bg-surface); color:var(--text-strong); border-color:var(--border-base)}
+
+.msg{
+  display:none; gap:10px; align-items:flex-start;
+  padding:13px 15px; border-radius:var(--r-md); border:1px solid;
+  font-size:14px; line-height:1.55;
+}
+.msg[data-show="1"]{display:flex}
+.msg.ok{color:var(--ok-text); background:var(--ok-bg); border-color:var(--ok-bd)}
+.msg.warn{color:var(--warn-text); background:var(--warn-bg); border-color:var(--warn-bd)}
+.msg.err{color:var(--err-text); background:var(--err-bg); border-color:var(--err-bd)}
+.msg .mark2{flex:none; width:9px; height:9px; border-radius:50%; background:currentColor; margin-top:7px}
+.msg b{display:block; font-weight:600}
+
+.hinweis{
+  padding:13px 15px; border-radius:var(--r-md);
+  background:var(--brand-quiet); border:1px solid var(--brand-quiet-bd);
+  font-size:14px; line-height:1.6; color:var(--text-base);
+}
+.hinweis b{color:var(--text-strong)}
+
+:where(a,button,input):focus-visible{
+  outline:3px solid var(--focus-ring); outline-offset:2px; border-radius:var(--r-sm);
+}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="mark" aria-hidden="true"></div>
+    <div>
+      <h1>LO<span>T</span></h1>
+      <em>Ersteinrichtung</em>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="karte">
+    <h2>Ersten Zugang anlegen</h2>
+    <p>
+      Dieser Zugang bekommt die Büro-Rolle und darf danach weitere Benutzer für
+      die Werkstatt anlegen. Diese Seite funktioniert nur ein einziges Mal —
+      sobald ein Benutzer existiert, schaltet sie sich selbst ab.
+    </p>
+
+    <div class="hinweis">
+      <b>Dein Passwort bleibt bei dir.</b> Es wird nur in verschlüsselter Form
+      gespeichert und lässt sich daraus nicht zurückrechnen. Auch ich sehe es
+      nicht — tipp es hier direkt ein und schick es mir nirgends hin.
+    </div>
+
+    <div class="msg" id="msg" role="status" aria-live="polite">
+      <span class="mark2" aria-hidden="true"></span>
+      <span><b id="msgTitle"></b><span id="msgText"></span></span>
+    </div>
+
+    <div class="field">
+      <label for="benutzer">Benutzername</label>
+      <input id="benutzer" type="text" autocomplete="username" autocapitalize="none"
+             autocorrect="off" spellcheck="false" value="ricardo">
+      <span class="note">Kleingeschrieben, mindestens drei Zeichen.</span>
+    </div>
+
+    <div class="field">
+      <label for="passwort">Passwort</label>
+      <input id="passwort" type="password" autocomplete="new-password">
+      <div class="staerke" id="staerke" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <span class="note" id="staerkeText">Mindestens acht Zeichen. Länger ist besser als komplizierter.</span>
+    </div>
+
+    <div class="field">
+      <label for="passwort2">Passwort wiederholen</label>
+      <input id="passwort2" type="password" autocomplete="new-password">
+    </div>
+
+    <button class="b b-primary" id="los" type="button">Zugang anlegen</button>
+
+    <p class="klein">
+      Verbindung zu <span id="apiAdresse"></span>
+    </p>
+  </div>
+</main>
+
+<script src="verbindung.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  document.getElementById('apiAdresse').textContent = LotVerbindung.adresse();
+
+  var msg = document.getElementById('msg');
+  function say(art, titel, text) {
+    msg.className = 'msg ' + art;
+    msg.setAttribute('data-show', '1');
+    document.getElementById('msgTitle').textContent = titel;
+    document.getElementById('msgText').textContent = text;
+  }
+
+  /* Passwortstärke: Länge zählt mehr als Sonderzeichen */
+  var pw = document.getElementById('passwort');
+  pw.addEventListener('input', function () {
+    var w = this.value;
+    var punkte = 0;
+    if (w.length >= 8) punkte++;
+    if (w.length >= 12) punkte++;
+    if (w.length >= 16) punkte++;
+    if (/[^a-zA-Z0-9]/.test(w) || (/[a-z]/.test(w) && /[A-Z]/.test(w) && /\d/.test(w))) punkte++;
+
+    var balken = document.getElementById('staerke').children;
+    var klasse = punkte <= 1 ? 'schwach' : (punkte === 2 ? 'mittel' : 'an');
+    for (var i = 0; i < balken.length; i++) {
+      balken[i].className = i < punkte ? klasse : '';
+    }
+    var texte = [
+      'Mindestens acht Zeichen. Länger ist besser als komplizierter.',
+      'Zu kurz — nimm lieber ein paar Wörter hintereinander.',
+      'Geht in Ordnung. Ein paar Zeichen mehr schaden nicht.',
+      'Gut.',
+      'Sehr gut.'
+    ];
+    document.getElementById('staerkeText').textContent = texte[punkte];
+  });
+
+  document.getElementById('los').addEventListener('click', async function () {
+    var benutzer = document.getElementById('benutzer').value.trim().toLowerCase();
+    var passwort = pw.value;
+    var wieder = document.getElementById('passwort2').value;
+
+    if (benutzer.length < 3) {
+      say('err', 'Benutzername zu kurz. ', 'Mindestens drei Zeichen.');
+      return;
+    }
+    if (passwort.length < 8) {
+      say('err', 'Passwort zu kurz. ', 'Mindestens acht Zeichen.');
+      pw.focus();
+      return;
+    }
+    if (passwort !== wieder) {
+      say('err', 'Die beiden Passwörter sind verschieden. ', 'Bitte nochmal eintippen.');
+      document.getElementById('passwort2').focus();
+      return;
+    }
+
+    this.disabled = true;
+    this.textContent = 'Wird angelegt …';
+    try {
+      await LotVerbindung.ruf('/api/einrichten', { benutzer: benutzer, passwort: passwort });
+      say('ok', 'Zugang steht. ',
+        'Du kannst dich jetzt mit ' + benutzer + ' anmelden. Diese Seite ist ab sofort gesperrt.');
+      this.textContent = 'Fertig';
+      setTimeout(function () { location.href = 'login.html'; }, 2500);
+    } catch (e) {
+      say('err', 'Hat nicht geklappt. ', e.message);
+      this.disabled = false;
+      this.textContent = 'Zugang anlegen';
+    }
+  });
+})();
+</script>

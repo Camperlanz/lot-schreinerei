@@ -1,0 +1,16 @@
+name = "lot-api"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# Die Datenbank wird beim Anlegen mit ihrer Kennung ergaenzt:
+#   npx wrangler d1 create lot
+# Die ausgegebene database_id hier eintragen.
+[[d1_databases]]
+binding = "DB"
+database_name = "lot"
+database_id = "884cdb64-f54c-4eb0-854a-486d49299ecf"
+
+[vars]
+# Von welcher Adresse aus die Seiten zugreifen duerfen.
+# Waehrend der Entwicklung steht hier *, spaeter die echte Adresse.
+ERLAUBT = "*"
