@@ -7,8 +7,8 @@ compatibility_date = "2026-09-01"
 # Die ausgegebene database_id hier eintragen.
 [[d1_databases]]
 binding = "DB"
-database_name = "lot"
-database_id = "884cdb64-f54c-4eb0-854a-486d49299ecf"
+database_name = "lot-weur"
+database_id = "82d2d946-0c95-4cb2-8d59-043e57550881"
 
 [vars]
 # Von welcher Adresse aus die Seiten zugreifen duerfen.
