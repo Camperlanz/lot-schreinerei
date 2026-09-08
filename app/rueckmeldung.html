@@ -369,7 +369,9 @@ textarea:focus, input:focus, select:focus{background:var(--bg-surface)}
   var art = 'wunsch';
   var meldungen = [];
   var ich = LotVerbindung.ich();
-  var istBuero = ich && ich.rolle === 'buero';
+  /* Buero und Administrator arbeiten die Meldungen ab, die Werkstatt
+     sieht nur die eigenen. */
+  var istBuero = ich && (ich.rolle === 'buero' || ich.rolle === 'admin');
 
   if (!LotVerbindung.angemeldet()) {
     location.href = 'login.html';
