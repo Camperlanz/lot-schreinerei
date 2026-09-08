@@ -222,7 +222,20 @@ textarea:focus, input:focus, select:focus{background:var(--bg-surface)}
 }
 .eintrag .antwort b{display:block; color:var(--text-strong); font-weight:600; margin-bottom:2px}
 .werkzeuge{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
-.werkzeuge select{width:auto; min-width:150px}
+.werkzeuge select{width:auto; min-width:140px; min-height:var(--touch-min)}
+
+.antwortfeld{
+  display:flex; flex-direction:column; gap:9px;
+  padding:13px 14px; border-radius:var(--r-md);
+  background:var(--bg-sunken); border:1px solid var(--border-base);
+}
+.antwortfeld[hidden]{display:none}
+.feld-klein{
+  font:500 12px/1 var(--f-mono); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted);
+}
+.antwortfeld textarea{min-height:80px}
+.antwortknoepfe{display:flex; gap:8px; flex-wrap:wrap}
 
 .msg{
   display:none; gap:10px; align-items:flex-start;
@@ -340,7 +353,7 @@ textarea:focus, input:focus, select:focus{background:var(--bg-surface)}
   </div>
 </main>
 
-<script src="verbindung.js?v=6772b299"></script>
+<script src="verbindung.js?v=ca57abaa"></script>
 <script>
 (function () {
   "use strict";
@@ -522,16 +535,30 @@ textarea:focus, input:focus, select:focus{background:var(--bg-surface)}
 
       var werkzeuge = '';
       if (istBuero) {
+        var offen = m.status !== 'erledigt';
         werkzeuge =
           '<div class="werkzeuge">' +
+            (offen
+              ? '<button class="b b-primary b-sm" data-rolle="erledigt">Erledigt</button>'
+              : '<button class="b b-secondary b-sm" data-rolle="wiederoeffnen">Wieder öffnen</button>') +
+            '<button class="b b-secondary b-sm" data-rolle="antworten">' +
+              (m.antwort ? 'Bemerkung ändern' : 'Bemerkung schreiben') +
+            '</button>' +
             '<select data-rolle="stand" aria-label="Stand ändern">' +
               Object.keys(STANDNAME).map(function (k) {
                 return '<option value="' + k + '"' + (m.status === k ? ' selected' : '') + '>' +
                        STANDNAME[k] + '</option>';
               }).join('') +
             '</select>' +
-            '<button class="b b-secondary b-sm" data-rolle="antworten">Antwort schreiben</button>' +
             '<button class="b b-secondary b-sm" data-rolle="weg">Löschen</button>' +
+          '</div>' +
+          '<div class="antwortfeld" data-fuer="' + m.id + '" hidden>' +
+            '<label class="feld-klein" for="antwort' + m.id + '">Bemerkung an ' + esc(m.wer) + '</label>' +
+            '<textarea id="antwort' + m.id + '" rows="3" maxlength="2000">' + esc(m.antwort || '') + '</textarea>' +
+            '<div class="antwortknoepfe">' +
+              '<button class="b b-primary b-sm" data-rolle="antwort-sichern">Speichern</button>' +
+              '<button class="b b-secondary b-sm" data-rolle="antwort-abbrechen">Abbrechen</button>' +
+            '</div>' +
           '</div>';
       }
 
@@ -568,13 +595,34 @@ textarea:focus, input:focus, select:focus{background:var(--bg-surface)}
     var m = meldungen.filter(function (x) { return x.id === id; })[0];
     if (!m) return;
 
-    if (knopf.getAttribute('data-rolle') === 'antworten') {
-      var antwort = prompt('Antwort an ' + m.wer + ':', m.antwort || '');
-      if (antwort === null) return;
-      await setzeStand(id, m.status, antwort);
+    var rolle = knopf.getAttribute('data-rolle');
+
+    if (rolle === 'erledigt') {
+      await setzeStand(id, 'erledigt', m.antwort || '');
       return;
     }
-    if (knopf.getAttribute('data-rolle') === 'weg') {
+    if (rolle === 'wiederoeffnen') {
+      await setzeStand(id, 'offen', m.antwort || '');
+      return;
+    }
+    if (rolle === 'antworten') {
+      var feld = eintrag.querySelector('.antwortfeld');
+      feld.hidden = false;
+      var t = feld.querySelector('textarea');
+      t.focus();
+      t.setSelectionRange(t.value.length, t.value.length);
+      return;
+    }
+    if (rolle === 'antwort-abbrechen') {
+      eintrag.querySelector('.antwortfeld').hidden = true;
+      return;
+    }
+    if (rolle === 'antwort-sichern') {
+      var text = eintrag.querySelector('.antwortfeld textarea').value.trim();
+      await setzeStand(id, m.status, text);
+      return;
+    }
+    if (rolle === 'weg') {
       if (knopf.textContent !== 'Wirklich löschen?') {
         knopf.textContent = 'Wirklich löschen?';
         setTimeout(function () { knopf.textContent = 'Löschen'; }, 4000);
@@ -591,11 +639,20 @@ textarea:focus, input:focus, select:focus{background:var(--bg-surface)}
 
   async function setzeStand(id, status, antwort) {
     try {
+      var vorher = meldungen.filter(function (x) { return x.id === id; })[0];
+      var antwortNeu = vorher && (vorher.antwort || '') !== (antwort || '');
       var d = await LotVerbindung.ruf('/api/meldung/status',
         { id: id, status: status, antwort: antwort || '' });
       meldungen = d.meldungen || [];
       render();
-      say('ok', 'Gespeichert. ', 'Stand steht jetzt auf ' + (STANDNAME[status] || status) + '.');
+      if (antwortNeu && antwort) {
+        say('ok', 'Bemerkung gespeichert. ',
+            (vorher ? vorher.wer : 'Der Melder') + ' sieht sie beim nächsten Öffnen.');
+      } else if (status === 'erledigt') {
+        say('ok', 'Abgehakt. ', 'Steht jetzt auf erledigt.');
+      } else {
+        say('ok', 'Gespeichert. ', 'Stand steht jetzt auf ' + (STANDNAME[status] || status) + '.');
+      }
     } catch (fehler) {
       say('err', 'Hat nicht geklappt. ', fehler.message);
     }

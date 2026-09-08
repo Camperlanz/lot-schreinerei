@@ -22,6 +22,19 @@
       var eigen = global.localStorage.getItem('lot.api');
       if (eigen) return JSON.parse(eigen);
     } catch (e) { /* nicht gesetzt oder Speicher gesperrt */ }
+    /* Kommt die Seite aus dem eigenen Netz, redet sie mit dem Testserver
+       daneben — auf demselben Rechner, nur anderer Port. So laesst sich
+       alles ansehen, auch vom Handy im gleichen WLAN, ohne dass etwas
+       online geht oder die echten Daten beruehrt werden. */
+    var l = global.location || {};
+    var h = l.hostname || '';
+    /* Ueber Tailscale liegt die Datenbank auf einem eigenen Port */
+    if (/\.ts\.net$/.test(h)) return 'https://' + h + ':8443';
+    var lokal = h === '127.0.0.1' || h === 'localhost' ||
+                /^192\.168\./.test(h) || /^10\./.test(h) ||
+                /^172\.(1[6-9]|2\d|3[01])\./.test(h) ||
+                /^100\./.test(h);          /* Tailscale */
+    if (lokal) return l.protocol + '//' + h + ':8787';
     return STANDARD_ADRESSE;
   })();
   var TOKEN_KEY = 'lot.token';
