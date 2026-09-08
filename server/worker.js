@@ -21,6 +21,11 @@
      GET  /api/meldungen     Liste - Buero alle, Werkstatt die eigenen
      POST /api/meldung/status
      POST /api/meldung/weg
+     GET  /api/benutzer      Zugaenge auflisten (nur Administrator)
+     POST /api/benutzer      anlegen
+     POST /api/benutzer/rolle
+     POST /api/benutzer/passwort
+     POST /api/benutzer/weg
    ========================================================================= */
 
 const JSON_KOPF = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -66,6 +71,16 @@ function gleich(a, b) {
   for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return d === 0;
 }
+
+/* ---------- Rollen -------------------------------------------------------
+   admin      darf alles, auch Zugaenge anlegen und Rollen vergeben
+   buero      fuehrt den Betrieb: bestellen, Artikel und Lieferanten pflegen,
+              Rueckmeldungen bearbeiten - aber keine Zugaenge verwalten
+   werkstatt  bucht, meldet, sieht die eigenen Rueckmeldungen             */
+var ROLLEN = ['admin', 'buero', 'werkstatt'];
+
+function istAdmin(ich)      { return ich.rolle === 'admin'; }
+function fuehrtBetrieb(ich) { return ich.rolle === 'admin' || ich.rolle === 'buero'; }
 
 /* ---------- Sitzungen ---------------------------------------------------- */
 async function werIstDas(db, anfrage) {
@@ -234,9 +249,9 @@ export default {
         const salz = zufallHex(16);
         const hash = await hashe(String(passwort), salz);
         await db.prepare(
-          "INSERT INTO benutzer (name, hash, salz, rolle) VALUES (?, ?, ?, 'buero')"
+          "INSERT INTO benutzer (name, hash, salz, rolle) VALUES (?, ?, ?, 'admin')"
         ).bind(name, hash, salz).run();
-        return raus({ ok: true, benutzer: name });
+        return raus({ ok: true, benutzer: name, rolle: 'admin' });
       }
 
       /* ---------- Ab hier braucht es eine Sitzung ---------- */
@@ -248,25 +263,103 @@ export default {
         return raus({ ok: true });
       }
 
-      /* Weitere Benutzer anlegen — nur aus dem Büro heraus */
+      /* ---------- Zugaenge verwalten — nur Administrator ---------- */
+      async function benutzerListe() {
+        const liste = await db.prepare(
+          `SELECT b.name, b.rolle, b.angelegt,
+                  (SELECT COUNT(*) FROM sitzungen s WHERE s.benutzer = b.name
+                     AND s.bis > datetime('now')) AS sitzungen
+             FROM benutzer b ORDER BY
+               CASE b.rolle WHEN 'admin' THEN 0 WHEN 'buero' THEN 1 ELSE 2 END, b.name`
+        ).all();
+        return liste.results;
+      }
+
+      /* Wie viele Administratoren gibt es ausser diesem einen? */
+      async function andereAdmins(ausser) {
+        const z = await db.prepare(
+          "SELECT COUNT(*) AS n FROM benutzer WHERE rolle = 'admin' AND name <> ?"
+        ).bind(ausser).first();
+        return z ? z.n : 0;
+      }
+
+      if (pfad === '/api/benutzer' && anfrage.method === 'GET') {
+        if (!istAdmin(ich)) return nein('Zugänge verwaltet nur der Administrator.', 403);
+        return raus({ benutzer: await benutzerListe(), ich: { name: ich.name, rolle: ich.rolle } });
+      }
+
       if (pfad === '/api/benutzer' && anfrage.method === 'POST') {
-        if (ich.rolle !== 'buero') return nein('Dafür fehlt die Berechtigung.', 403);
+        if (!istAdmin(ich)) return nein('Zugänge legt nur der Administrator an.', 403);
         const { benutzer, passwort, rolle } = await anfrage.json();
         const name = String(benutzer || '').trim().toLowerCase();
         if (name.length < 3) return nein('Der Benutzername braucht mindestens drei Zeichen.', 400);
+        if (!/^[a-z0-9._-]+$/.test(name)) {
+          return nein('Erlaubt sind Kleinbuchstaben, Zahlen, Punkt, Strich und Unterstrich.', 400);
+        }
         if (String(passwort || '').length < 8) {
           return nein('Das Passwort braucht mindestens acht Zeichen.', 400);
         }
+        if (ROLLEN.indexOf(rolle) === -1) return nein('Unbekannte Rolle.', 400);
         const salz = zufallHex(16);
         const hash = await hashe(String(passwort), salz);
         try {
           await db.prepare(
             'INSERT INTO benutzer (name, hash, salz, rolle) VALUES (?, ?, ?, ?)'
-          ).bind(name, hash, salz, rolle === 'buero' ? 'buero' : 'werkstatt').run();
+          ).bind(name, hash, salz, rolle).run();
         } catch (e) {
-          return nein('Den Benutzer ' + name + ' gibt es schon.', 409);
+          return nein('Den Zugang ' + name + ' gibt es schon.', 409);
         }
-        return raus({ ok: true, benutzer: name });
+        return raus({ ok: true, benutzer: await benutzerListe() });
+      }
+
+      if (pfad === '/api/benutzer/rolle' && anfrage.method === 'POST') {
+        if (!istAdmin(ich)) return nein('Rollen vergibt nur der Administrator.', 403);
+        const { name, rolle } = await anfrage.json();
+        if (ROLLEN.indexOf(rolle) === -1) return nein('Unbekannte Rolle.', 400);
+        /* Der letzte Administrator darf sich die Rechte nicht selbst nehmen —
+           sonst kommt niemand mehr an die Verwaltung. */
+        if (name === ich.name && rolle !== 'admin' && (await andereAdmins(ich.name)) === 0) {
+          return nein('Du bist der einzige Administrator. Lege erst einen zweiten an.', 409);
+        }
+        await db.prepare('UPDATE benutzer SET rolle = ? WHERE name = ?').bind(rolle, name).run();
+        return raus({ ok: true, benutzer: await benutzerListe() });
+      }
+
+      if (pfad === '/api/benutzer/passwort' && anfrage.method === 'POST') {
+        const { name, passwort } = await anfrage.json();
+        const ziel = String(name || '').trim().toLowerCase();
+        /* Jeder darf sein eigenes Passwort setzen, der Administrator jedes. */
+        if (!istAdmin(ich) && ziel !== ich.name) {
+          return nein('Fremde Passwörter setzt nur der Administrator.', 403);
+        }
+        if (String(passwort || '').length < 8) {
+          return nein('Das Passwort braucht mindestens acht Zeichen.', 400);
+        }
+        const salz = zufallHex(16);
+        const hash = await hashe(String(passwort), salz);
+        await db.batch([
+          db.prepare('UPDATE benutzer SET hash = ?, salz = ? WHERE name = ?')
+            .bind(hash, salz, ziel),
+          /* Alle Sitzungen dieses Zugangs beenden — wer das alte Passwort
+             hatte, ist damit draussen. */
+          db.prepare('DELETE FROM sitzungen WHERE benutzer = ?').bind(ziel)
+        ]);
+        return raus({ ok: true, abgemeldet: ziel === ich.name });
+      }
+
+      if (pfad === '/api/benutzer/weg' && anfrage.method === 'POST') {
+        if (!istAdmin(ich)) return nein('Zugänge löscht nur der Administrator.', 403);
+        const { name } = await anfrage.json();
+        if (name === ich.name) return nein('Den eigenen Zugang kannst du nicht löschen.', 409);
+        const z = await db.prepare('SELECT rolle FROM benutzer WHERE name = ?').bind(name).first();
+        if (z && z.rolle === 'admin' && (await andereAdmins(name)) === 0) {
+          return nein('Das ist der letzte Administrator.', 409);
+        }
+        await db.batch([
+          db.prepare('DELETE FROM sitzungen WHERE benutzer = ?').bind(name),
+          db.prepare('DELETE FROM benutzer WHERE name = ?').bind(name)
+        ]);
+        return raus({ ok: true, benutzer: await benutzerListe() });
       }
 
       if (pfad === '/api/stand' && anfrage.method === 'GET') {
@@ -448,7 +541,7 @@ export default {
       }
 
       if (pfad === '/api/meldungen' && anfrage.method === 'GET') {
-        const nurEigene = ich.rolle !== 'buero';
+        const nurEigene = !fuehrtBetrieb(ich);
         const abfrage = nurEigene
           ? db.prepare('SELECT * FROM meldungen WHERE wer = ? ORDER BY id DESC LIMIT 200').bind(ich.name)
           : db.prepare('SELECT * FROM meldungen ORDER BY id DESC LIMIT 200');
@@ -457,7 +550,7 @@ export default {
       }
 
       if (pfad === '/api/meldung/status' && anfrage.method === 'POST') {
-        if (ich.rolle !== 'buero') return nein('Das darf nur das Büro.', 403);
+        if (!fuehrtBetrieb(ich)) return nein('Das dürfen nur Büro und Administrator.', 403);
         const { id, status, antwort } = await anfrage.json();
         const erlaubt = ['offen', 'angeschaut', 'erledigt', 'zurueckgestellt'];
         if (erlaubt.indexOf(status) === -1) return nein('Unbekannter Stand.', 400);
@@ -471,7 +564,7 @@ export default {
       }
 
       if (pfad === '/api/meldung/weg' && anfrage.method === 'POST') {
-        if (ich.rolle !== 'buero') return nein('Das darf nur das Büro.', 403);
+        if (!fuehrtBetrieb(ich)) return nein('Das dürfen nur Büro und Administrator.', 403);
         const { id } = await anfrage.json();
         await db.prepare('DELETE FROM meldungen WHERE id = ?').bind(id).run();
         const liste = await db.prepare('SELECT * FROM meldungen ORDER BY id DESC LIMIT 200').all();

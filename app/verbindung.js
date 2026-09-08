@@ -214,6 +214,22 @@
   global.addEventListener('online', versuchNachzureichen);
   setInterval(versuchNachzureichen, 60000);
 
+  /* Den Zugaenge-Knopf gibt es nur fuer Administratoren. Der Server
+     weist Fremde ohnehin ab - das hier haelt die Leiste nur aufgeraeumt. */
+  function zeigeAdminKnopf() {
+    var k = global.document && global.document.getElementById('zugaengeKnopf');
+    if (!k) return;
+    var wer = ich();
+    k.hidden = !(wer && wer.rolle === 'admin');
+  }
+  if (global.document) {
+    if (global.document.readyState === 'loading') {
+      global.document.addEventListener('DOMContentLoaded', zeigeAdminKnopf);
+    } else {
+      zeigeAdminKnopf();
+    }
+  }
+
   global.LotVerbindung = {
     adresse: function () { return ADRESSE; },
     ruf: ruf,
