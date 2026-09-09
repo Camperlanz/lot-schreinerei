@@ -319,24 +319,36 @@ input:focus,textarea:focus{background:var(--bg-surface)}
 
   <div class="foot">
     <span>Lot 0.1.1</span>
-    <span>Nur lokal im Browser gespeichert</span>
+    <span id="netzstand">verbunden</span>
   </div>
 </main>
 
-<script src="verbindung.js?v=4f9bd993"></script>
-<script src="neuerungen.js?v=f007d6bd"></script>
-<script src="stammdaten.js?v=46fd8898"></script>
+<script src="verbindung.js?v=e178409b"></script>
+<script src="neuerungen.js?v=5db7944e"></script>
+<script src="stammdaten.js?v=67552d6e"></script>
 <script>
 (function () {
   "use strict";
 
   var root = document.documentElement;
 
-  var liste = LotStamm.ladeLieferanten();
+  var liste = [];           /* wird beim Start aus der Datenbank gefuellt */
   var bearbeitet = null;   /* id des Lieferanten im Formular, null = neu */
   var loeschKandidat = null;
 
-  function save() { LotStamm.speichereLieferanten(liste); }
+  /* Der Server gibt nach jeder Aenderung den frischen Stand zurueck. */
+  function uebernimm() { liste = LotStamm.ladeLieferanten(); }
+
+  /* Fehler beim Schreiben so zeigen, dass klar ist: es wurde NICHT
+     gespeichert. Sonst tippt jemand weiter und glaubt, es sei drin. */
+  function schiefgegangen(fehler) {
+    if (fehler && fehler.ohneNetz) {
+      say('err', 'Keine Verbindung. ', fehler.message ||
+          'Der Server ist nicht erreichbar — nichts wurde gespeichert.');
+    } else {
+      say('err', 'Nicht gespeichert. ', (fehler && fehler.message) || 'Unbekannter Fehler.');
+    }
+  }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -421,7 +433,7 @@ input:focus,textarea:focus{background:var(--bg-surface)}
   document.getElementById('newBtn').addEventListener('click', function(){ formOeffnen(null); });
   document.getElementById('cancelBtn').addEventListener('click', formSchliessen);
 
-  document.getElementById('saveBtn').addEventListener('click', function () {
+  document.getElementById('saveBtn').addEventListener('click', async function () {
     var name = F.name.value.trim();
     if (!name) {
       say('err', 'Name fehlt. ', 'Ohne Namen lässt sich der Lieferant nicht zuordnen.');
@@ -451,17 +463,23 @@ input:focus,textarea:focus{background:var(--bg-surface)}
       shop: F.shop.value.trim(),
       notiz: F.notiz.value.trim()
     };
-    if (bearbeitet) {
-      var l = finde(bearbeitet);
-      for (var k in daten) if (Object.prototype.hasOwnProperty.call(daten, k)) l[k] = daten[k];
-      say('ok', 'Gespeichert. ', name + ' wurde geändert.');
-    } else {
-      daten.id = neueId();
-      liste.push(daten);
-      say('ok', 'Erfasst. ', name + ' steht jetzt in der Liste.');
+    if (bearbeitet) daten.id = bearbeitet;
+
+    var knopf = document.getElementById('saveBtn');
+    var alterText = knopf ? knopf.textContent : '';
+    if (knopf) { knopf.disabled = true; knopf.textContent = 'Wird gespeichert …'; }
+    try {
+      await LotStamm.lieferantSichern(daten);
+      uebernimm();
+      say('ok', bearbeitet ? 'Gespeichert. ' : 'Erfasst. ',
+          bearbeitet ? name + ' wurde geändert.' : name + ' steht jetzt in der Liste.');
+      formSchliessen();
+    } catch (fehler) {
+      schiefgegangen(fehler);
+    } finally {
+      if (knopf) { knopf.disabled = false; knopf.textContent = alterText; }
     }
-    save();
-    formSchliessen();
+    render();
   });
 
   /* ---------- Liste ---------- */
@@ -523,7 +541,7 @@ input:focus,textarea:focus{background:var(--bg-surface)}
     });
   }
 
-  document.getElementById('list').addEventListener('click', function (e) {
+  document.getElementById('list').addEventListener('click', async function (e) {
     var btn = e.target.closest('button[data-act]');
     if (!btn) return;
     var id = btn.getAttribute('data-id');
@@ -540,11 +558,15 @@ input:focus,textarea:focus{background:var(--bg-surface)}
       return;
     }
     var name = finde(id).name;
-    liste = liste.filter(function (x) { return x.id !== id; });
     loeschKandidat = null;
-    if (bearbeitet === id) formSchliessen();
-    save();
-    say('ok', 'Gelöscht. ', name + ' ist aus der Liste entfernt.');
+    try {
+      await LotStamm.lieferantWeg(id);
+      uebernimm();
+      if (bearbeitet === id) formSchliessen();
+      say('ok', 'Gelöscht. ', name + ' ist aus der Liste entfernt.');
+    } catch (fehler) {
+      schiefgegangen(fehler);
+    }
     render();
   });
 
@@ -557,6 +579,20 @@ input:focus,textarea:focus{background:var(--bg-surface)}
     render();
   });
 
-  render();
+  /* ---------- Start: Stand aus der Datenbank holen ---------- */
+  (async function () {
+    try {
+      await LotStamm.start();
+      uebernimm();
+      if (!LotStamm.istFrisch()) {
+        say('warn', 'Ohne Verbindung. ',
+            'Angezeigt wird der zuletzt geholte Stand. Ändern geht erst wieder mit Netz.');
+      }
+    } catch (fehler) {
+      if (fehler && fehler.message === 'Nicht angemeldet.') return;
+      say('err', 'Stand nicht ladbar. ', (fehler && fehler.message) || 'Unbekannter Fehler.');
+    }
+    render();
+  })();
 })();
 </script>

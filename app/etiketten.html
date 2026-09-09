@@ -512,9 +512,9 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
   <div class="bogen-huelle" id="bogenHuelle"></div>
 </main>
 
-<script src="verbindung.js?v=4f9bd993"></script>
-<script src="neuerungen.js?v=f007d6bd"></script>
-<script src="stammdaten.js?v=46fd8898"></script>
+<script src="verbindung.js?v=e178409b"></script>
+<script src="neuerungen.js?v=5db7944e"></script>
+<script src="stammdaten.js?v=67552d6e"></script>
 <script src="qr.js?v=6f25b66a"></script>
 <script>
 (function () {
@@ -570,7 +570,7 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
   ];
 
   var root = document.documentElement;
-  var artikel = LotStamm.ladeArtikel();
+  var artikel = [];     /* wird beim Start aus der Datenbank gefuellt */
   var format = FORMATE[0];
   var gewaehlt = {};    /* code -> Anzahl Etiketten */
   var neuzeichnen = null;
@@ -588,19 +588,27 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
      Wird beim Drucken vermerkt — aber erst, nachdem der Druck bestätigt
      wurde. Die App sieht nicht, ob wirklich Papier herauskam.
      ===================================================================== */
-  var GEDRUCKT_KEY = 'lot.etiketten.gedruckt.v1';
+  /* Der Vermerk steht am Artikel in der Datenbank, nicht am Gerät. Sonst
+     wüsste der PC im Büro nicht, was am iPad schon gedruckt wurde. */
   var gedruckt = {};
 
-  (function ladeGedruckt() {
-    try {
-      var roh = window.localStorage.getItem(GEDRUCKT_KEY);
-      if (roh) gedruckt = JSON.parse(roh) || {};
-    } catch (e) { gedruckt = {}; }
-  })();
+  function uebernimm() {
+    artikel = LotStamm.ladeArtikel();
+    gedruckt = {};
+    artikel.forEach(function (a) {
+      if (a.etikett_am) gedruckt[a.code] = datumAus(a.etikett_am);
+    });
+  }
 
-  function sichereGedruckt() {
-    try { window.localStorage.setItem(GEDRUCKT_KEY, JSON.stringify(gedruckt)); }
-    catch (e) { /* Speicher gesperrt: gilt nur für diese Sitzung */ }
+  /* "2026-09-09" -> "09.09.2026" */
+  function datumAus(iso) {
+    var t = String(iso).slice(0, 10).split('-');
+    return t.length === 3 ? t[2] + '.' + t[1] + '.' + t[0] : String(iso);
+  }
+
+  function schiefgegangen(fehler) {
+    say('err', fehler && fehler.ohneNetz ? 'Keine Verbindung. ' : 'Nicht vermerkt. ',
+        (fehler && fehler.message) || 'Unbekannter Fehler.');
   }
 
   function heute() {
@@ -1064,16 +1072,20 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
     kasten.scrollIntoView({ block: 'nearest' });
   }
 
-  document.getElementById('druckOk').addEventListener('click', function () {
+  document.getElementById('druckOk').addEventListener('click', async function () {
     if (!offeneBestaetigung) return;
-    var datum = heute();
-    offeneBestaetigung.forEach(function (code) { gedruckt[code] = datum; });
-    sichereGedruckt();
-    var n = offeneBestaetigung.length;
+    var codes = offeneBestaetigung.slice();
     offeneBestaetigung = null;
     document.getElementById('bestaetigung').hidden = true;
-    say('ok', 'Vermerkt. ',
-      n + (n === 1 ? ' Artikel hat' : ' Artikel haben') + ' jetzt ein Etikett, Stand ' + datum + '.');
+    try {
+      await LotStamm.etikett(codes, false);
+      uebernimm();
+      say('ok', 'Vermerkt. ',
+        codes.length + (codes.length === 1 ? ' Artikel hat' : ' Artikel haben') +
+        ' jetzt ein Etikett, Stand ' + heute() + '. Das sieht auch das Büro.');
+    } catch (fehler) {
+      schiefgegangen(fehler);
+    }
     renderListe();
   });
 
@@ -1085,17 +1097,21 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
   });
 
   /* Vermerk wieder aufheben, wenn ein Etikett verloren geht oder unleserlich wird */
-  document.getElementById('standZuruecksetzen').addEventListener('click', function () {
+  document.getElementById('standZuruecksetzen').addEventListener('click', async function () {
     var betroffen = sichtbar().filter(function (a) { return gedruckt[a.code]; });
     if (!betroffen.length) {
       say('warn', 'Nichts zurückzusetzen. ', 'Keiner der angezeigten Artikel ist als gedruckt vermerkt.');
       return;
     }
-    betroffen.forEach(function (a) { delete gedruckt[a.code]; });
-    sichereGedruckt();
-    say('info', 'Zurückgesetzt. ',
-      betroffen.length + (betroffen.length === 1 ? ' Artikel gilt' : ' Artikel gelten') +
-      ' wieder als ohne Etikett.');
+    try {
+      await LotStamm.etikett(betroffen.map(function (a) { return a.code; }), true);
+      uebernimm();
+      say('info', 'Zurückgesetzt. ',
+        betroffen.length + (betroffen.length === 1 ? ' Artikel gilt' : ' Artikel gelten') +
+        ' wieder als ohne Etikett.');
+    } catch (fehler) {
+      schiefgegangen(fehler);
+    }
     renderListe();
   });
 
@@ -1128,9 +1144,24 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
       'Den QR-Code erzeugt Word selbst mit dem Feld DISPLAYBARCODE.');
   });
 
-  /* ---------- Start ---------- */
+  /* ---------- Start: Stand aus der Datenbank holen ---------- */
   syncEigenes();
-  vorauswahl();
   renderRaster();
+  (async function () {
+    try {
+      await LotStamm.start();
+      uebernimm();
+      if (!LotStamm.istFrisch()) {
+        say('warn', 'Ohne Verbindung. ',
+            'Angezeigt wird der zuletzt geholte Stand. Vermerken geht erst wieder mit Netz.');
+      }
+    } catch (fehler) {
+      if (fehler && fehler.message === 'Nicht angemeldet.') return;
+      say('err', 'Stand nicht ladbar. ', (fehler && fehler.message) || 'Unbekannter Fehler.');
+    }
+    vorauswahl();
+    renderListe();
+    renderRaster();
+  })();
 })();
 </script>

@@ -24,6 +24,28 @@
   /* ---------- Was ist neu — Neuestes zuoberst ---------- */
   var NEUERUNGEN = [
     {
+      version: '0.1.2',
+      datum: '09.09.2026',
+      titel: 'Ein Lager für alle Geräte',
+      einleitung: 'Bestände stehen jetzt in der Datenbank statt im einzelnen Gerät. ' +
+                  'Das iPad in der Werkstatt und der PC im Büro zeigen dasselbe.',
+      punkte: [
+        { text: 'Was du entnimmst, sieht das Büro sofort — und umgekehrt. ' +
+                'Kein Vergleichen mehr, welches Gerät recht hat.' },
+        { text: 'Artikel und Lieferanten musst du nur noch <b>einmal</b> erfassen, ' +
+                'nicht an jedem Gerät neu.' },
+        { text: 'Ohne Netz geht es weiter: gebucht wird trotzdem, und sobald ' +
+                'wieder Verbindung da ist, wandert alles von selbst hinüber. ' +
+                'Unten steht, wie viele Buchungen warten.' },
+        { text: 'Neuer Knopf <b>Neu laden</b> unten auf der Bestellseite — holt den ' +
+                'Stand nochmal, wenn das iPad lange offen lag.' },
+        { text: 'Beim Etikettendruck sieht jetzt auch das Büro, welche Artikel ' +
+                'schon ein Etikett haben.' },
+        { text: 'Kommt eine Lieferung an und wird zugebucht, verschwindet die ' +
+                'Position von der Bestellliste — sie wird nicht zweimal bestellt.' }
+      ]
+    },
+    {
       version: '0.1.1',
       datum: '08.09.2026',
       titel: 'Rückmeldungen und Zugänge',

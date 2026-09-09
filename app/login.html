@@ -426,8 +426,8 @@ input:focus{background:var(--bg-surface)}
   </main>
 </div>
 
-<script src="verbindung.js?v=4f9bd993"></script>
-<script src="neuerungen.js?v=f007d6bd"></script>
+<script src="verbindung.js?v=e178409b"></script>
+<script src="neuerungen.js?v=5db7944e"></script>
 <script>
 (function () {
   "use strict";
@@ -591,19 +591,6 @@ input:focus{background:var(--bg-surface)}
         'Melde dich bei Ricardo — er kann im Büro ein neues Passwort setzen.');
   });
 
-  /* ---------- Zeigen, ob der Server erreichbar ist ---------- */
-  function netzstand() {
-    var feld = document.getElementById('netzstand');
-    if (!feld) return;
-    var wartend = LotVerbindung.anzahlWartend();
-    if (!navigator.onLine) {
-      feld.textContent = wartend ? 'ohne Netz · ' + wartend + ' Buchungen warten' : 'ohne Netz';
-    } else {
-      feld.textContent = wartend ? wartend + ' Buchungen warten' : 'verbunden';
-    }
-  }
-  window.addEventListener('online', netzstand);
-  window.addEventListener('offline', netzstand);
-  netzstand();
+  /* Den Verbindungsstand unten zeigt verbindung.js — auf jeder Seite gleich. */
 })();
 </script>

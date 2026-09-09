@@ -222,12 +222,38 @@
     var wer = ich();
     k.hidden = !(wer && wer.rolle === 'admin');
   }
+  /* Fusszeile: verbunden, ohne Netz, oder wie viele Buchungen warten.
+     Steht auf jeder Seite an derselben Stelle, damit man beim Blick
+     nach unten sofort sieht, woran man ist. */
+  function zeigeNetzstand() {
+    var feld = global.document && global.document.getElementById('netzstand');
+    if (!feld) return;
+    var offen = anzahlWartend();
+    if (!global.navigator.onLine) {
+      feld.textContent = offen
+        ? 'ohne Netz · ' + offen + (offen === 1 ? ' Buchung wartet' : ' Buchungen warten')
+        : 'ohne Netz';
+    } else {
+      feld.textContent = offen
+        ? offen + (offen === 1 ? ' Buchung wartet' : ' Buchungen warten')
+        : 'verbunden';
+    }
+  }
+
+  function beimStart() {
+    zeigeAdminKnopf();
+    zeigeNetzstand();
+  }
+
   if (global.document) {
     if (global.document.readyState === 'loading') {
-      global.document.addEventListener('DOMContentLoaded', zeigeAdminKnopf);
+      global.document.addEventListener('DOMContentLoaded', beimStart);
     } else {
-      zeigeAdminKnopf();
+      beimStart();
     }
+    global.addEventListener('online', zeigeNetzstand);
+    global.addEventListener('offline', zeigeNetzstand);
+    global.setInterval(zeigeNetzstand, 5000);
   }
 
   global.LotVerbindung = {
@@ -242,6 +268,7 @@
     nachreichen: nachreichen,
     anzahlWartend: anzahlWartend,
     wennNachgereicht: wennNachgereicht,
+    zeigeNetzstand: zeigeNetzstand,
     versuchNachzureichen: versuchNachzureichen
   };
 })(window);

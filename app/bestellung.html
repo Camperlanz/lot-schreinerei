@@ -599,69 +599,85 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
 
   <div class="foot">
     <span>Lot 0.1.1</span>
-    <span>Bestände nur lokal im Browser</span>
-    <button class="b b-secondary b-sm" id="resetBtn" type="button">Bestände zurücksetzen</button>
+    <span id="netzstand">verbunden</span>
+    <button class="b b-secondary b-sm" id="resetBtn" type="button">Neu laden</button>
   </div>
 </main>
 
-<script src="verbindung.js?v=4f9bd993"></script>
-<script src="neuerungen.js?v=f007d6bd"></script>
-<script src="stammdaten.js?v=46fd8898"></script>
+<script src="verbindung.js?v=e178409b"></script>
+<script src="neuerungen.js?v=5db7944e"></script>
+<script src="stammdaten.js?v=67552d6e"></script>
 <script>
 (function () {
   "use strict";
 
-  /* Artikelstamm kommt aus stammdaten.js und wird unter "Artikel" gepflegt.
-     Wer dort etwas anlegt, findet es hier sofort beim Scannen. */
-  var STAMM = LotStamm.ladeArtikel();
+  /* Artikel, Bestände und Bestellliste kommen aus der Datenbank. iPad und
+     Büro-PC sehen denselben Stand: was hier gebucht wird, steht dort
+     sofort. stammdaten.js macht die Aufrufe, hier stehen nur die Zahlen. */
+  var STAMM = [];
+  var bestand = {}, log = [], offen = {};
 
-  var KEY = 'lot.lager.v6';
+  var TON_KEY = 'lot.ton';       /* Ton ist Geräteeinstellung, nicht Betriebsdatum */
   var root = document.documentElement;
-
-  var bestand = {}, log = [];
-
-  /* Offene Bestellpositionen:
-     offen[code] = { status:'gemeldet'|'bestellt', menge:n, wann:'29.08. 14:22' }
-     gemeldet  — die Werkstatt hat gesagt, dass es fehlt
-     bestellt  — das Büro hat die Bestellung ausgelöst
-     Kommt die Ware an, wird zugebucht und der Eintrag fällt weg. */
-  var offen = {};
   var ton = true;
+  try { ton = window.localStorage.getItem(TON_KEY) !== 'aus'; } catch (e) {}
 
-  /* ---------- Speicher ---------- */
-  function load() {
-    try { var raw = window.localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; }
-    catch (e) { return null; }
-  }
   function save() {
-    try {
-      window.localStorage.setItem(KEY, JSON.stringify({
-        ist: bestand, offen: offen, log: log, ton: ton
-      }));
-    } catch (e) { /* privater Modus: Zustand bleibt nur fuer diese Sitzung */ }
+    try { window.localStorage.setItem(TON_KEY, ton ? 'an' : 'aus'); } catch (e) {}
   }
 
-  STAMM.forEach(function (a) { bestand[a.code] = a.ist; });
-  var gespeichert = load();
-  if (gespeichert) {
-    STAMM.forEach(function (a) {
-      if (gespeichert.ist && typeof gespeichert.ist[a.code] === 'number') bestand[a.code] = gespeichert.ist[a.code];
+  /* Nach jeder Antwort vom Server die Anzeige neu aus dem Stand befüllen */
+  function uebernimm() {
+    STAMM = LotStamm.ladeArtikel();
+    bestand = {};
+    STAMM.forEach(function (a) { bestand[a.code] = a.ist; });
+    offen = LotStamm.bestellungen();
+    log = LotStamm.protokoll().map(function (e) {
+      return {
+        zeit: zeitAus(e.wann), code: e.code, name: e.name || e.code,
+        art: e.art, menge: e.menge, einheit: e.einheit || '', danach: e.danach
+      };
     });
-    offen = gespeichert.offen || {};
-    log = Array.isArray(gespeichert.log) ? gespeichert.log : [];
-    if (typeof gespeichert.ton === 'boolean') ton = gespeichert.ton;
-  } else {
-    /* Beim ersten Start: was leer ist, gehoert auf die Liste.
-       Danach zaehlt nur noch, was jemand meldet oder streicht. */
-    STAMM.forEach(function (a) { if (a.ist <= 0) offen[a.code] = neuerEintrag('gemeldet'); });
+  }
+
+  /* Der Server schreibt die Zeit in Weltzeit. Hier soll die Uhr an der
+     Wand stehen, sonst stimmt beim Nachschauen nichts. */
+  /* "2026-09-09 12:22:31" -> "09.09. 14:22", in der Zeit an der Wand */
+  function wannAus(wann) {
+    if (!wann) return '';
+    var d = new Date(String(wann).replace(' ', 'T') + 'Z');
+    if (isNaN(d.getTime())) return String(wann);
+    return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '. ' +
+           ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+
+  function zeitAus(wann) {
+    if (!wann) return '';
+    var d = new Date(String(wann).replace(' ', 'T') + 'Z');
+    if (isNaN(d.getTime())) return String(wann).slice(11, 16);
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+
+  function fehlerText(fehler) {
+    return (fehler && fehler.message) || 'Unbekannter Fehler.';
+  }
+  /* Im Scannbereich — dort schaut man auf die grosse Fläche */
+  function fehlerStage(fehler, name) {
+    zeigen(fehler && fehler.ohneNetz ? 'warn' : 'err',
+           fehler && fehler.ohneNetz ? 'Keine Verbindung' : 'Nicht gebucht',
+           name || '', fehlerText(fehler));
+    piep('err');
+  }
+  /* In der Bestellliste */
+  function fehlerOrder(fehler) {
+    orderSay(fehler && fehler.ohneNetz ? 'warn' : 'err',
+             fehler && fehler.ohneNetz ? 'Keine Verbindung. ' : 'Nicht gespeichert. ',
+             fehlerText(fehler));
   }
 
   function artikel(code) {
     for (var i = 0; i < STAMM.length; i++) if (STAMM[i].code === code) return STAMM[i];
     return null;
-  }
-  function neuerEintrag(status, menge) {
-    return { status: status, menge: menge || 0, wann: heute() + ' ' + uhrzeit() };
   }
   function istBestellt(code) { return !!offen[code] && offen[code].status === 'bestellt'; }
 
@@ -856,7 +872,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     var st = status(a);
     if (istBestellt(a.code)) {
       zeigen('info', 'Wartet auf Lieferung', a.name,
-        'Bestellt am <b>' + esc(offen[a.code].wann) + '</b> &middot; ' +
+        'Bestellt am <b>' + esc(wannAus(offen[a.code].wann)) + '</b> &middot; ' +
         'Ist die Ware da? Stückzahl eintragen und Erhalten tippen.');
     } else {
       zeigen('', 'Erkannt', a.name,
@@ -871,36 +887,38 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   }
 
   /* ---------- Buchen (gemeinsam fuer Scan und Handbetrieb) ---------- */
-  function buchen(a, richtung, m) {
+  /* Bucht am Server. Ohne Netz wandert die Buchung in die Warteschlange
+     und wird nachgereicht — mit Schlüssel, damit sie nicht doppelt zählt. */
+  async function buchen(a, richtung, m) {
     var alt = bestand[a.code];
     if (richtung < 0 && m > alt) {
       return { ok:false, text:'Im Lager stehen nur ' + alt + ' ' + a.einheit + '.' };
     }
-    bestand[a.code] = alt + richtung * m;
-    protokoll(a, richtung < 0 ? 'Entnahme' : 'Zugang', m);
-    var leer = false;
-    if (bestand[a.code] <= 0 && !offen[a.code]) {
-      melden(a.code, true, true, 0);
-      leer = true;
+    var r = await LotStamm.buchen(a.code, richtung < 0 ? 'Entnahme' : 'Zugang', m);
+    if (!r.ok) return { ok:false, text:r.grund || 'Buchung abgelehnt.' };
+    if (r.gewartet) {
+      /* Kein Netz: die Anzeige zieht mit, der Server holt es später nach */
+      bestand[a.code] = alt + richtung * m;
+      renderAlles();
+      return { ok:true, leer:bestand[a.code] <= 0, gewartet:true, wartend:r.wartend };
     }
-    save();
-    renderBadges();
-    return { ok:true, leer:leer };
+    uebernimm();
+    renderAlles();
+    return { ok:true, leer:!!r.leer };
   }
 
-  function melden(code, an, still, menge) {
+  async function melden(code, an, still, menge) {
     var a = artikel(code);
     if (!a) return;
     var m = menge > 0 ? menge : 0;
-    if (an) {
-      offen[code] = neuerEintrag('gemeldet', m);
-      protokoll(a, 'Gemeldet', m);
-    } else {
-      delete offen[code];
-      protokoll(a, 'Meldung zurück', 0);
+    try {
+      await LotStamm.melden(code, an, m);
+      uebernimm();
+    } catch (fehler) {
+      fehlerOrder(fehler);
+      return;
     }
-    save();
-    renderBadges();
+    renderAlles();
     if (!still) {
       if (an) {
         zeigen('warn', 'Gemeldet', a.name,
@@ -912,13 +930,9 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     }
   }
 
-  function protokoll(a, art, m) {
-    log.unshift({
-      zeit: uhrzeit(), code: a.code, name: a.name,
-      art: art, menge: m, einheit: a.einheit, danach: bestand[a.code]
-    });
-    if (log.length > 12) log.length = 12;
-    renderLog();
+  /* Alles neu zeichnen — nach jeder Antwort vom Server */
+  function renderAlles() {
+    renderSchnellnummern(); renderBadges(); renderLog(); renderLager(); renderOrder();
   }
 
   /* ---------- Reiter ---------- */
@@ -955,16 +969,19 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   var menge = 1;
 
   /* Ein paar Nummern zum Antippen, wenn gerade kein Scanner da ist.
-     Solange kein Artikel erfasst ist, steht hier nichts. */
+     Wird nach jedem Stand neu gebaut — der Artikelstamm kommt vom Server. */
   var demo = document.getElementById('demoCodes');
-  demo.hidden = STAMM.length === 0;
-  STAMM.slice(0, 4).forEach(function (a) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'demo-code';
-    b.textContent = a.code;
-    b.setAttribute('data-code', a.code);
-    demo.appendChild(b);
-  });
+  function renderSchnellnummern() {
+    demo.innerHTML = '';
+    demo.hidden = STAMM.length === 0;
+    STAMM.slice(0, 4).forEach(function (a) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'demo-code';
+      b.textContent = a.code;
+      b.setAttribute('data-code', a.code);
+      demo.appendChild(b);
+    });
+  }
   demo.addEventListener('click', function (e) {
     var b = e.target.closest('.demo-code');
     if (b) verarbeiteScan(b.getAttribute('data-code'));
@@ -1026,7 +1043,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       '</div>' +
       (istBestellt(a.code)
         ? '<div class="wareneingang">' +
-            '<p class="we-kopf">Bestellt am ' + esc(offen[a.code].wann) +
+            '<p class="we-kopf">Bestellt am ' + esc(wannAus(offen[a.code].wann)) +
               (offen[a.code].menge ? ' &middot; ' + offen[a.code].menge + ' ' + esc(a.einheit) : '') + '</p>' +
             '<div class="we-zeile">' +
               '<input id="weMenge" type="number" min="1" step="1" value="' +
@@ -1036,7 +1053,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
           '</div>'
         : '<div class="melden' + (an ? ' offen' : '') + '">' +
             (an
-              ? '<p class="melden-kopf">Auf der Büroliste seit ' + esc(offen[a.code].wann) +
+              ? '<p class="melden-kopf">Auf der Büroliste seit ' + esc(wannAus(offen[a.code].wann)) +
                   (offen[a.code].menge ? ' &middot; ' + offen[a.code].menge + ' ' + esc(a.einheit) : '') +
                 '</p>'
               : '') +
@@ -1078,15 +1095,15 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     document.getElementById('rein').addEventListener('click', function(){ handBuchen(1); });
     var flagBtn = document.getElementById('flag');
     if (flagBtn) {
-      flagBtn.addEventListener('click', function () {
+      flagBtn.addEventListener('click', async function () {
         /* Die Menge oben gilt auch hier — was man braucht, hat man schon eingestellt */
-        melden(a.code, !offen[a.code], false, menge);
+        await melden(a.code, !offen[a.code], false, menge);
         renderArticle();
       });
     }
     var weBtn = document.getElementById('weBtn');
     if (weBtn) {
-      weBtn.addEventListener('click', function () {
+      weBtn.addEventListener('click', async function () {
         var feld = document.getElementById('weMenge');
         var m = parseInt(feld.value, 10);
         if (isNaN(m) || m < 1) {
@@ -1095,7 +1112,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
           feld.focus();
           return;
         }
-        wareneingang(a, m);
+        await wareneingang(a, m);
         piep('ok');
         zeigen('ok', 'Wareneingang', a.name,
           '+<b>' + m + ' ' + esc(a.einheit) + '</b> &middot; Bestand jetzt <b>' + bestand[a.code] + '</b>');
@@ -1109,13 +1126,24 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     if (f) f.value = menge;
   }
 
-  function handBuchen(richtung) {
+  async function handBuchen(richtung) {
     if (!aktuell) return;
     var a = aktuell;
-    var r = buchen(a, richtung, menge);
+    var r;
+    try {
+      r = await buchen(a, richtung, menge);
+    } catch (fehler) {
+      fehlerStage(fehler, a.name);
+      return;
+    }
     if (!r.ok) {
       piep('err');
       zeigen('err', 'Nicht gebucht', a.name, r.text);
+    } else if (r.gewartet) {
+      piep('warn');
+      zeigen('warn', 'Ohne Netz gebucht', a.name,
+        'Wird nachgereicht, sobald wieder Verbindung da ist — ' +
+        r.wartend + ' warten.');
     } else if (r.leer) {
       piep('warn');
       zeigen('warn', 'Lager leer', a.name, 'Bestand <b>0</b> — automatisch für die Bestellung gemeldet.');
@@ -1197,7 +1225,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     });
   }
 
-  document.getElementById('lagerBody').addEventListener('click', function (e) {
+  document.getElementById('lagerBody').addEventListener('click', async function (e) {
     var btn = e.target.closest('button[data-act]');
     if (!btn) return;
     var code = btn.getAttribute('data-code');
@@ -1210,7 +1238,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       zeigen('', 'Ausgewählt', aktuell.name,
         'Bestand <b>' + bestand[code] + ' ' + esc(aktuell.einheit) + '</b> · ' + st.text);
     } else {
-      melden(code, !offen[code], true);
+      await melden(code, !offen[code], true);
       renderLager();
       if (aktuell && aktuell.code === code) renderArticle();
     }
@@ -1291,7 +1319,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
             '<b>' + esc(a.name) + '</b>' +
             '<span>' + esc(a.code) + ' &middot; ' + esc(a.ort) + '</span>' +
             '<span class="pill ' + (bestellt ? 'info' : 'warn') + '" style="margin-top:6px">' +
-              (bestellt ? 'Bestellt ' + esc(e.wann) : 'Gemeldet ' + esc(e.wann)) +
+              (bestellt ? 'Bestellt ' + esc(wannAus(e.wann)) : 'Gemeldet ' + esc(wannAus(e.wann))) +
             '</span>' +
           '</div>' +
           '<div class="have">Bestand ' + bestand[a.code] + ' ' + esc(a.einheit) + '</div>' +
@@ -1318,6 +1346,9 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   }
 
   /* einmalig registriert, nicht bei jedem Rendern erneut */
+  /* Menge tippen: erst wenn eine Sekunde Ruhe ist, geht es zum Server —
+     sonst schickt jeder Tastendruck einen Aufruf. */
+  var mengeWartet = {};
   document.getElementById('orderList').addEventListener('input', function (e) {
     if (e.target.type !== 'number') return;
     var line = e.target.closest('.line');
@@ -1325,12 +1356,16 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     var code = line.getAttribute('data-code');
     if (!offen[code]) return;
     var v = parseInt(e.target.value, 10);
-    offen[code].menge = (isNaN(v) || v < 0) ? 0 : v;
-    save();
+    if (isNaN(v) || v < 0) v = 0;
+    offen[code].menge = v;
     renderSummary();
+    clearTimeout(mengeWartet[code]);
+    mengeWartet[code] = setTimeout(function () {
+      LotStamm.menge(code, v).catch(fehlerOrder);
+    }, 900);
   });
 
-  document.getElementById('orderList').addEventListener('click', function (e) {
+  document.getElementById('orderList').addEventListener('click', async function (e) {
     var btn = e.target.closest('button[data-act]');
     if (!btn) return;
     var act = btn.getAttribute('data-act');
@@ -1338,18 +1373,18 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     /* Ganze Lieferantengruppe auf einmal als bestellt vermerken */
     if (act === 'alle') {
       var lief = btn.getAttribute('data-lief');
-      var n = 0;
-      offeneListe().forEach(function (a) {
-        if (a.lieferant === lief && offen[a.code].status === 'gemeldet') {
-          alsBestellt(a, true); n++;
-        }
-      });
-      save();
-      renderBadges();
-      orderSay('info', 'Als bestellt vermerkt. ',
-        n + (n === 1 ? ' Position' : ' Positionen') + ' bei ' + lief +
-        ' warten jetzt auf die Lieferung.');
-      renderOrder();
+      var codes = offeneListe().filter(function (a) {
+        return a.lieferant === lief && offen[a.code].status === 'gemeldet';
+      }).map(function (a) { return a.code; });
+      if (!codes.length) return;
+      try {
+        await LotStamm.bestellt(codes, false);
+        uebernimm();
+        orderSay('info', 'Als bestellt vermerkt. ',
+          codes.length + (codes.length === 1 ? ' Position' : ' Positionen') + ' bei ' + lief +
+          ' warten jetzt auf die Lieferung.');
+      } catch (fehler) { fehlerOrder(fehler); }
+      renderAlles();
       return;
     }
 
@@ -1358,26 +1393,28 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     if (!a) return;
 
     if (act === 'bestellt') {
-      alsBestellt(a, false);
-      save();
-      orderSay('info', 'Als bestellt vermerkt. ',
-        a.name + ' wartet auf die Lieferung. Wer sie annimmt, tippt auf Erhalten.');
-      renderOrder();
+      try {
+        await LotStamm.bestellt([code], false);
+        uebernimm();
+        orderSay('info', 'Als bestellt vermerkt. ',
+          a.name + ' wartet auf die Lieferung. Wer sie annimmt, tippt auf Erhalten.');
+      } catch (fehler) { fehlerOrder(fehler); }
+      renderAlles();
       return;
     }
 
     if (act === 'zurueck') {
-      offen[code].status = 'gemeldet';
-      offen[code].wann = heute() + ' ' + uhrzeit();
-      protokoll(a, 'Bestellung zurück', 0);
-      save();
-      orderSay('warn', 'Zurückgesetzt. ', a.name + ' steht wieder als gemeldet auf der Liste.');
-      renderOrder();
+      try {
+        await LotStamm.bestellt([code], true);
+        uebernimm();
+        orderSay('warn', 'Zurückgesetzt. ', a.name + ' steht wieder als gemeldet auf der Liste.');
+      } catch (fehler) { fehlerOrder(fehler); }
+      renderAlles();
       return;
     }
 
     if (act === 'weg') {
-      melden(code, false, true);
+      await melden(code, false, true);
       renderOrder();
       if (aktuell) renderArticle();
       return;
@@ -1392,7 +1429,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
         feld.focus();
         return;
       }
-      wareneingang(a, menge);
+      await wareneingang(a, menge);
       orderSay('ok', 'Eingebucht. ',
         menge + ' ' + a.einheit + ' ' + a.name + ' — Bestand jetzt ' + bestand[a.code] + '.');
       renderOrder();
@@ -1401,23 +1438,19 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   });
 
   /* Büro vermerkt: Bestellung ist raus */
-  function alsBestellt(a, still) {
-    var e = offen[a.code];
-    if (!e || e.status === 'bestellt') return;
-    e.status = 'bestellt';
-    e.wann = heute() + ' ' + uhrzeit();
-    protokoll(a, 'Bestellt', e.menge || 0);
-    if (!still) renderBadges();
-  }
-
   /* Werkstatt bucht die Lieferung zu — danach ist die Position erledigt */
-  function wareneingang(a, menge) {
-    bestand[a.code] = bestand[a.code] + menge;
-    protokoll(a, 'Wareneingang', menge);
-    delete offen[a.code];
-    save();
-    renderBadges();
-    renderLager();
+  async function wareneingang(a, menge) {
+    try {
+      var r = await LotStamm.buchen(a.code, 'Wareneingang', menge);
+      if (!r.ok) { fehlerOrder({ message: r.grund }); return; }
+      if (r.gewartet) {
+        bestand[a.code] = bestand[a.code] + menge;
+        delete offen[a.code];
+      } else {
+        uebernimm();
+      }
+    } catch (fehler) { fehlerOrder(fehler); return; }
+    renderAlles();
     if (aktuell && aktuell.code === a.code) renderArticle();
   }
 
@@ -1454,24 +1487,64 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   });
 
   /* ---------- Zuruecksetzen ---------- */
-  document.getElementById('resetBtn').addEventListener('click', function () {
-    STAMM = LotStamm.ladeArtikel();
-    STAMM.forEach(function (a) { bestand[a.code] = a.ist; });
-    offen = {}; log = [];
-    STAMM.forEach(function (a) { if (a.ist <= 0) offen[a.code] = neuerEintrag('gemeldet'); });
-    aktuell = null; menge = 1; letzterCode = '';
-    save();
-    renderArticle(); renderLog(); renderLager(); renderOrder(); renderBadges();
-    setScannerState('Scanner bereit');
-    zeigen('', 'Zurückgesetzt', 'Alles auf Anfang', 'Bestände, Meldungen und Protokoll stehen wieder am Start.');
+  /* ---------- Neu laden ----------
+     Holt den Stand nochmal vom Server. Nötig, wenn im Büro etwas geändert
+     wurde, während das iPad offen lag. */
+  document.getElementById('resetBtn').addEventListener('click', async function () {
+    var knopf = this;
+    knopf.disabled = true;
+    var alterText = knopf.textContent;
+    knopf.textContent = 'Wird geholt …';
+    try {
+      await LotStamm.start();
+      uebernimm();
+      aktuell = null; menge = 1; letzterCode = '';
+      renderArticle(); renderAlles();
+      setScannerState('Scanner bereit');
+      zeigen('ok', 'Aufgefrischt', 'Stand ist aktuell',
+        STAMM.length + ' Artikel &middot; ' + Object.keys(offen).length + ' offene Positionen');
+    } catch (fehler) {
+      fehlerStage(fehler, 'Neu laden');
+    } finally {
+      knopf.disabled = false; knopf.textContent = alterText;
+    }
   });
 
-  /* ---------- Start ---------- */
-  renderArticle();
-  renderLog();
-  renderLager();
-  renderBadges();
+  /* ---------- Start: Stand aus der Datenbank holen ---------- */
   showTab('tabScan');
+  (async function () {
+    setScannerState('Stand wird geholt …');
+    try {
+      await LotStamm.start();
+      uebernimm();
+      if (!LotStamm.istFrisch()) {
+        zeigen('warn', 'Ohne Verbindung', 'Zuletzt geholter Stand',
+          'Buchungen werden gemerkt und nachgereicht, sobald wieder Netz da ist.');
+      }
+      setScannerState('Scanner bereit');
+    } catch (fehler) {
+      if (fehler && fehler.message === 'Nicht angemeldet.') return;
+      setScannerState('Kein Stand geladen');
+      fehlerStage(fehler, 'Stand nicht ladbar');
+    }
+    renderArticle();
+    renderAlles();
+  })();
+
+  /* Nachgereichte Buchungen: der Stand kommt zurück, Anzeige nachziehen */
+  if (LotVerbindung.wennNachgereicht) {
+    LotVerbindung.wennNachgereicht(function (r) {
+      if (!r || !r.stand) return;
+      LotStamm.uebernehmen(r.stand);
+      uebernimm();
+      renderArticle();
+      renderAlles();
+      zeigen('ok', 'Nachgereicht', r.nachgereicht +
+        (r.nachgereicht === 1 ? ' Buchung' : ' Buchungen') + ' übertragen',
+        r.abgelehnt ? '<b>' + r.abgelehnt + '</b> hat der Server nicht angenommen — nachschauen.'
+                    : 'Der Stand ist wieder gleich.');
+    });
+  }
   bereit();
 })();
 </script>

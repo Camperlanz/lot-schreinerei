@@ -323,21 +323,34 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
 
   <div class="foot">
     <span>Lot 0.1.1</span>
-    <span>Nur lokal im Browser gespeichert</span>
+    <span id="netzstand">verbunden</span>
   </div>
 </main>
 
-<script src="verbindung.js?v=4f9bd993"></script>
-<script src="neuerungen.js?v=f007d6bd"></script>
-<script src="stammdaten.js?v=46fd8898"></script>
+<script src="verbindung.js?v=e178409b"></script>
+<script src="neuerungen.js?v=5db7944e"></script>
+<script src="stammdaten.js?v=67552d6e"></script>
 <script>
 (function () {
   "use strict";
 
   var root = document.documentElement;
-  var liste = LotStamm.ladeArtikel();
+  var liste = [];             /* wird beim Start aus der Datenbank gefuellt */
   var bearbeitet = null;      /* code des Artikels im Formular, null = neu */
   var loeschKandidat = null;
+
+  function uebernimm() { liste = LotStamm.ladeArtikel(); }
+
+  /* Fehler beim Schreiben deutlich zeigen — sonst tippt jemand weiter
+     und glaubt, es sei gespeichert. */
+  function schiefgegangen(fehler) {
+    if (fehler && fehler.ohneNetz) {
+      say('err', 'Keine Verbindung. ', fehler.message ||
+          'Der Server ist nicht erreichbar — nichts wurde gespeichert.');
+    } else {
+      say('err', 'Nicht gespeichert. ', (fehler && fehler.message) || 'Unbekannter Fehler.');
+    }
+  }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -348,13 +361,6 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     for (var i = 0; i < liste.length; i++) if (liste[i].code === code) return liste[i];
     return null;
   }
-  function speichern() {
-    if (!LotStamm.speichereArtikel(liste)) {
-      say('warn', 'Nicht dauerhaft gespeichert. ',
-        'Der Browser lässt nichts ablegen — die Änderung gilt nur für diese Sitzung.');
-    }
-  }
-
   /* ---------- Hell / Dunkel ---------- */
   var themeBtn = document.getElementById('themeBtn');
   var themeLabel = document.getElementById('themeLabel');
@@ -470,7 +476,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   });
   document.getElementById('cancelBtn').addEventListener('click', formSchliessen);
 
-  document.getElementById('saveBtn').addEventListener('click', function () {
+  document.getElementById('saveBtn').addEventListener('click', async function () {
     var code = F.code.value.trim().toUpperCase();
     var name = F.name.value.trim();
     var lieferant = F.lieferant.value;
@@ -492,23 +498,28 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       say('err', 'Nummer gibt es schon. ', code + ' ist bereits vergeben.');
       F.code.focus(); return;
     }
-    if (bearbeitet) {
-      var a = finde(bearbeitet);
-      a.code = code; a.name = name; a.lieferant = lieferant;
-      a.einheit = F.einheit.value; a.ort = F.ort.value.trim();
-      say('ok', 'Gespeichert. ', name + ' wurde geändert.');
-    } else {
-      var ist = parseInt(F.ist.value, 10);
-      if (isNaN(ist) || ist < 0) ist = 0;
-      liste.push({
-        code: code, name: name, einheit: F.einheit.value,
-        lieferant: lieferant, ort: F.ort.value.trim(),
-        ist: ist
+    var ist = parseInt(F.ist.value, 10);
+    if (isNaN(ist) || ist < 0) ist = 0;
+
+    var knopf = document.getElementById('saveBtn');
+    var alterText = knopf.textContent;
+    knopf.disabled = true; knopf.textContent = 'Wird gespeichert …';
+    try {
+      await LotStamm.artikelSichern({
+        code: code, alt: bearbeitet, name: name, einheit: F.einheit.value,
+        lieferant: lieferant, ort: F.ort.value.trim(), ist: ist
       });
-      say('ok', 'Erfasst. ', name + ' ist angelegt und beim Scannen sofort auffindbar.');
+      uebernimm();
+      say('ok', bearbeitet ? 'Gespeichert. ' : 'Erfasst. ',
+          bearbeitet ? name + ' wurde geändert.'
+                     : name + ' ist angelegt und beim Scannen sofort auffindbar.');
+      formSchliessen();
+    } catch (fehler) {
+      schiefgegangen(fehler);
+    } finally {
+      knopf.disabled = false; knopf.textContent = alterText;
     }
-    speichern();
-    formSchliessen();
+    render();
   });
 
   /* ---------- Liste ---------- */
@@ -560,7 +571,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     });
   }
 
-  document.getElementById('list').addEventListener('click', function (e) {
+  document.getElementById('list').addEventListener('click', async function (e) {
     var btn = e.target.closest('button[data-act]');
     if (!btn) return;
     var code = btn.getAttribute('data-code');
@@ -575,11 +586,15 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       return;
     }
     var name = finde(code).name;
-    liste = liste.filter(function (x) { return x.code !== code; });
     loeschKandidat = null;
-    if (bearbeitet === code) formSchliessen();
-    speichern();
-    say('ok', 'Gelöscht. ', name + ' ist aus dem Artikelstamm entfernt.');
+    try {
+      await LotStamm.artikelWeg(code);
+      uebernimm();
+      if (bearbeitet === code) formSchliessen();
+      say('ok', 'Gelöscht. ', name + ' ist aus dem Artikelstamm entfernt.');
+    } catch (fehler) {
+      schiefgegangen(fehler);
+    }
     render();
   });
 
@@ -591,6 +606,20 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
     render();
   });
 
-  render();
+  /* ---------- Start: Stand aus der Datenbank holen ---------- */
+  (async function () {
+    try {
+      await LotStamm.start();
+      uebernimm();
+      if (!LotStamm.istFrisch()) {
+        say('warn', 'Ohne Verbindung. ',
+            'Angezeigt wird der zuletzt geholte Stand. Ändern geht erst wieder mit Netz.');
+      }
+    } catch (fehler) {
+      if (fehler && fehler.message === 'Nicht angemeldet.') return;
+      say('err', 'Stand nicht ladbar. ', (fehler && fehler.message) || 'Unbekannter Fehler.');
+    }
+    render();
+  })();
 })();
 </script>

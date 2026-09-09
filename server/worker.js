@@ -149,6 +149,11 @@ async function buche(db, { code, richtung, menge, art, wer, schluessel, quelle }
        ON CONFLICT(code) DO NOTHING`
     ).bind(code, wer || ''));
   }
+  /* Ist die Ware angekommen, ist die Bestellposition erledigt. Sonst
+     stünde sie weiter auf der Liste und würde ein zweites Mal bestellt. */
+  if (art === 'Wareneingang') {
+    schritte.push(db.prepare('DELETE FROM bestellungen WHERE code = ?').bind(code));
+  }
   await db.batch(schritte);
 
   return { ok: true, bestand: neu, leer: neu <= 0, artikel };
