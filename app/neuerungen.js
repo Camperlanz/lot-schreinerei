@@ -3,7 +3,7 @@
    -------------------------------------------------------------------------
    Damit niemand erklaeren muss, was sich geaendert hat: nach einem Update
    erscheint beim ersten Oeffnen ein Kasten mit dem, was neu ist. Einmal
-   gelesen, kommt er nicht wieder. Ueber den Knopf "Neu" in der Kopfzeile
+   gelesen, kommt er nicht wieder. Ueber den Knopf "Neuigkeiten" oben
    kann man jederzeit nachschauen.
 
    Beim naechsten Update NUR das hier tun: oben in NEUERUNGEN einen neuen
@@ -153,10 +153,18 @@
   '.lot-neu-zu:hover{background:var(--brand-hover)}' +
   '.lot-neu-zu:focus-visible{outline:3px solid var(--brand-text); outline-offset:2px}' +
 
-  /* Der Knopf in der Kopfzeile. Der Punkt zeigt: da ist etwas Ungelesenes. */
-  '#lotNeuKnopf{position:relative}' +
+  /* Der Knopf in der Kopfzeile. Solange etwas ungelesen ist, leuchtet er
+     orange - man soll ihn sehen, ohne ihn zu suchen. Ist alles gelesen,
+     wird er still wie die uebrigen Knoepfe. */
+  '#lotNeuKnopf{position:relative; display:inline-flex; align-items:center; gap:7px}' +
+  '#lotNeuKnopf.frisch{background:var(--brand); border-color:var(--brand);' +
+  ' color:var(--text-on-brand); font-weight:600}' +
+  '#lotNeuKnopf.frisch:hover{background:var(--brand-hover); border-color:var(--brand-hover)}' +
   '#lotNeuKnopf .lot-neu-punkt{display:inline-block; width:8px; height:8px;' +
-  ' border-radius:50%; background:var(--brand); margin-left:7px; vertical-align:1px}' +
+  ' border-radius:50%; background:var(--text-on-brand)}' +
+  '@media (prefers-reduced-motion:no-preference){' +
+  ' #lotNeuKnopf.frisch .lot-neu-punkt{animation:lotNeuPuls 2.2s ease-in-out infinite}' +
+  ' @keyframes lotNeuPuls{0%,100%{opacity:1}50%{opacity:.35}}}' +
 
   '@media (max-width:520px){' +
   ' .lot-neu-hinter{padding:0; align-items:stretch}' +
@@ -246,7 +254,7 @@
     html +=
         '</div>' +
         '<div class="lot-neu-fuss">' +
-          '<span class="lot-neu-hinweis">Später wieder unter „Neu" in der Kopfzeile.</span>' +
+          '<span class="lot-neu-hinweis">Später wieder über „Neuigkeiten" oben.</span>' +
           '<button type="button" class="lot-neu-zu">Verstanden</button>' +
         '</div>' +
       '</div>';
@@ -274,12 +282,14 @@
         punkt = global.document.createElement('span');
         punkt.className = 'lot-neu-punkt';
         punkt.setAttribute('aria-hidden', 'true');
-        k.appendChild(punkt);
+        k.insertBefore(punkt, k.firstChild);
       }
-      k.setAttribute('aria-label', 'Neuerungen — ungelesen');
+      k.classList.add('frisch');
+      k.setAttribute('aria-label', 'Neuigkeiten — es gibt Ungelesenes');
     } else {
       if (punkt) k.removeChild(punkt);
-      k.setAttribute('aria-label', 'Neuerungen');
+      k.classList.remove('frisch');
+      k.setAttribute('aria-label', 'Neuigkeiten');
     }
   }
 
@@ -293,13 +303,19 @@
     k.type = 'button';
     k.id = 'lotNeuKnopf';
     k.className = 'ghost';
-    k.textContent = 'Neu';
+    k.appendChild(d.createTextNode('Neuigkeiten'));
     k.addEventListener('click', function () { zeige(true); });
 
-    /* Vor den Hell/Dunkel-Knopf, damit der ganz rechts bleibt */
-    var thema = d.getElementById('themeBtn') || d.getElementById('soundBtn');
-    if (thema && thema.parentNode === leiste) leiste.insertBefore(k, thema);
-    else leiste.appendChild(k);
+    /* Ganz nach vorn, gleich hinter Logo und Name — dort schaut man zuerst
+       hin. Weiter hinten zwischen den uebrigen Knoepfen geht er unter. */
+    var marke = leiste.querySelector('.who') || leiste.querySelector('.brand');
+    if (marke && marke.parentNode === leiste && marke.nextSibling) {
+      leiste.insertBefore(k, marke.nextSibling);
+    } else if (marke && marke.parentNode === leiste) {
+      leiste.appendChild(k);
+    } else {
+      leiste.insertBefore(k, leiste.firstChild);
+    }
     knopfAuffrischen();
   }
 
