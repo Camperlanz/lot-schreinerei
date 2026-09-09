@@ -2,7 +2,7 @@
 
 Diese Datei ist die Übergabe. Wer hier neu einsteigt (Mensch oder KI), liest sie zuerst.
 
-**Stand: 28.08.2026**
+**Stand: 09.09.2026 · Version 0.1.2 · läuft online**
 
 ---
 
@@ -12,16 +12,44 @@ Ricardo baut seine eigene Schreinerei auf (Schweiz, Gründungsphase) und dazu **
 eine Web-App, die am Büro-PC und am iPad in der Werkstatt läuft. Der Name kommt vom
 Senklot: „alles im Lot".
 
-Der Aufbau läuft ausdrücklich **strukturiert und Schritt für Schritt**. Fertig sind
-Farbkonzept, Anmeldung und der Bereich Bestellung. Ein Technologie-Stack ist noch
-**nicht** gewählt — alles sind eigenständige HTML-Dateien, die ohne Server im Browser
-laufen. Kein Backend, keine Datenbank, keine echte Anmeldung.
-
 ## Arbeitsstil
 
 Deutsch, kurz und direkt. Ricardo will durchziehen, keine langen Erklärungen und keine
 Rückfragen bei Kleinigkeiten. Bei echten Weggabelungen kurz fragen, sonst bauen und die
-Annahme dazusagen.
+Annahme dazusagen. Er arbeitet oft **vom Handy aus**, weil er spät heimkommt.
+
+---
+
+## Wo es läuft
+
+| | |
+|---|---|
+| **App** | https://camperlanz.github.io/lot-schreinerei/app/login.html |
+| **Schnittstelle** | https://lot-api.ricarsanches16.workers.dev |
+| **Datenbank** | Cloudflare D1 `lot-weur` (Westeuropa), Kennung `82d2d946-0c95-4cb2-8d59-043e57550881` |
+| **Verzeichnis** | https://github.com/Camperlanz/lot-schreinerei — **öffentlich**, nie Zugangsdaten hineinlegen |
+| **Vorschau** | `https://r-pereira.tail477501.ts.net/app/login.html` über Tailscale, nur wenn Ricardos PC läuft |
+
+**Cloudflare gewählt**, weil es nie pausiert: „es kann sein das es wochen nicht benutzt
+wird es muss einfach immer laufen die schreiner sind nicht die it freaks."
+
+### Ausrollen
+
+```bash
+cd server
+export CLOUDFLARE_ACCOUNT_ID=bc54eb8344630ebf4649ea9ca47a194d
+npx wrangler deploy
+npx wrangler d1 execute lot-weur --remote --file=<migration>.sql
+cd .. && git push origin main
+```
+
+Ohne `CLOUDFLARE_ACCOUNT_ID` findet wrangler das Konto nicht (Fehler 7403).
+
+GitHub Pages braucht rund eine Minute und liefert HTML mit `max-age=600` aus — bis zu
+zehn Minuten sehen Geräte noch die alte Seite. Die Skripte tragen `?v=<hash>`, die sind
+sofort aktuell.
+
+**Online nur, wenn Ricardo es sagt.** Er gibt den Zeitpunkt vor.
 
 ---
 
@@ -29,13 +57,25 @@ Annahme dazusagen.
 
 | Datei | Inhalt |
 |---|---|
-| `design/tokens.css` | Das Farbsystem als CSS-Variablen. **Grundlage für alles.** |
-| `design/farbkonzept.html` | Das Farbkonzept zum Anschauen, mit Kontrastwerten |
+| `design/tokens.css` | Farbsystem als CSS-Variablen. **Grundlage für alles.** |
+| `design/farbkonzept.html` | Farbkonzept zum Anschauen, mit Kontrastwerten |
 | `app/login.html` | Anmeldung |
-| `app/bestellung.html` | Lager, Scannen, Bestellliste |
-
-Die HTML-Dateien tragen die Tokens **inline**, damit sie einzeln laufen. Beim echten
-Build stattdessen `tokens.css` einbinden — die Werte sind identisch.
+| `app/einrichten.html` | Ersteinrichtung — tot, sobald ein Zugang besteht |
+| `app/bestellung.html` | Scannen · Lager · Bestellen |
+| `app/artikel.html` | Artikel anlegen und ändern |
+| `app/lieferanten.html` | Lieferanten |
+| `app/etiketten.html` | Etikettenbogen mit QR-Code |
+| `app/zugaenge.html` | Zugänge und Rollen — **nur Administrator** |
+| `app/rueckmeldung.html` | Was die Werkstatt meldet |
+| `app/verbindung.js` | Schnittstelle, Sitzung, Warteschlange ohne Netz, Verbindungsanzeige |
+| `app/stammdaten.js` | Datenschicht darüber: Stand holen, schreiben |
+| `app/neuerungen.js` | „Was ist neu" — Liste, Kasten, Knopf |
+| `app/qr.js` | QR-Kodierung, selbst geschrieben, keine Fremdbibliothek |
+| `server/worker.js` | die ganze Schnittstelle |
+| `server/schema.sql` | Tabellen |
+| `server/leeren.sql` | Datenbank leeren, `ricardo` bleibt stehen |
+| `server/beispieldaten_NICHT_EINSPIELEN.sql` | alte Beispieldaten, nur zum Ausprobieren |
+| `vorlagen/etiketten_docx.js` | erzeugt den Word-Bogen |
 
 ---
 
@@ -51,8 +91,7 @@ Orange **#F26419** als Marke, warme Neutrals (Holz statt Beton), Petrol als Seku
 3. **Status ist nie orange** — sonst verschwimmt Marke mit Warnung. Grün/Gelb/Rot/Blau.
 4. **Nur semantische Tokens in Komponenten**, nie Hex-Werte. Sonst bricht der Dunkelmodus.
 
-Dunkelmodus ist gleichwertig, nicht Zugabe — drei Zustände sind abgedeckt: System hell,
-System dunkel, ausdrückliche Wahl (`data-theme`).
+Dunkelmodus ist gleichwertig: System hell, System dunkel, ausdrückliche Wahl (`data-theme`).
 
 Werkstatt-Kontext treibt die Entscheidungen: Gegenlicht vom Tor, Staub, oft nur eine freie
 Hand. Bedienelemente mindestens 44 px, Hauptaktionen 56 px. Masse und Nummern in
@@ -61,88 +100,101 @@ IBM Plex Mono (Zahlen).
 
 ---
 
+## Wie die Daten laufen
+
+**Alles Betriebliche steht in der Datenbank**, nicht im Gerät. Nur was zum Gerät gehört,
+bleibt lokal: Ton an/aus, Hell/Dunkel, das eigene Etikettenformat, und welche Neuigkeiten
+gelesen wurden.
+
+```
+Seite  →  LotStamm  →  LotVerbindung  →  Worker  →  D1
+```
+
+`LotStamm.start()` holt den Stand einmal beim Öffnen. **Jeder schreibende Endpunkt gibt
+den frischen Gesamtstand zurück** (`standHolen`), der ersetzt den Zwischenspeicher. Damit
+kann keine Seite mit alten Zahlen weiterarbeiten.
+
+**Ohne Netz:** Der zuletzt geholte Stand wird angezeigt. Buchungen wandern mit einem
+Schlüssel in die Warteschlange und werden nachgereicht — der Schlüssel verhindert, dass
+eine Buchung doppelt zählt. Artikel und Lieferanten **ändern** verlangt Verbindung; sonst
+müsste man raten, wer zuerst war.
+
+Die Datenbank schreibt Zeiten in Weltzeit. Die Seiten rechnen sie auf die Uhr an der Wand
+um (`wannAus`, `zeitAus` in `bestellung.html`).
+
+### Rollen
+
+| Rolle | darf |
+|---|---|
+| `admin` | alles, auch Zugänge anlegen und Rollen vergeben |
+| `buero` | Betrieb führen: bestellen, Artikel und Lieferanten pflegen, Rückmeldungen |
+| `werkstatt` | scannen, buchen, melden; sieht die eigenen Rückmeldungen |
+
+Zwei Sperren: der letzte Administrator kann sich weder degradieren noch löschen. Ein
+zurückgesetztes Passwort beendet alle Sitzungen dieses Zugangs. **Alles serverseitig
+geprüft**, nicht nur in der Oberfläche.
+
+PBKDF2 mit **100 000** Durchgängen — mehr nimmt Cloudflare nicht an, 150 000 wirft
+`NotSupportedError` und jede Anmeldung stirbt mit 500.
+
+---
+
 ## Was gebaut ist
 
-### Anmeldung (`app/login.html`)
+**Anmeldung** — Bereichswahl (Bestellung aktiv, Auftrag und Zeit als Platzhalter),
+Benutzername und Passwort, Knopf „Zeigen".
 
-Bereichswahl oben (aktuell **Bestellung**, dazu gesperrte Platzhalter Auftrag und Zeit),
-darunter **Benutzername + Passwort**. Neue Bereiche ergänzt man im Array `BEREICHE` ganz
-oben im Script — eine Zeile pro Bereich.
+**Bestellung** — drei Reiter: Scannen · Lager · Bestellen.
 
-Test: `ricardo` / `lot`.
+Der Ablauf: Etikett scannen → der Artikel erscheint → *dann* entscheiden: Entnehmen,
+Einlagern oder „Muss bestellt werden". Der Scan selbst bucht nichts.
 
-### Bestellung (`app/bestellung.html`)
+Gescannt wird mit einem **Handscanner am iPad**, nicht mit der Kamera. So ein Scanner
+meldet sich als Tastatur an. Deshalb: globaler `keydown`-Empfang; über 90 ms zwischen
+zwei Zeichen ist ein Mensch, kein Scanner; Eingabefelder ausser dem Codefeld sind
+ausgenommen; Doppellesungen innerhalb 1,2 s fliegen raus; Tonsignal bei Erfolg und
+Fehler, weil beim Scannen niemand aufs Display schaut.
 
-Drei Reiter: **Scannen · Lager · Bestellen**.
+Bestellliste nach Lieferant gruppiert. Das Büro trägt die Menge ein und vermerkt
+„bestellt"; die Werkstatt bucht die Lieferung zu, dann verschwindet die Position.
+Bestand 0 meldet sich selbst.
 
-**Der Ablauf:** Etikett scannen → der Artikel erscheint → *dann* entscheiden:
-Entnehmen, Einlagern oder „Muss bestellt werden". Der Scan selbst bucht nichts.
+**Artikel · Lieferanten · Etiketten** — Etiketten als Word-Bogen, Standardformat
+70 × 36 mm, 24 Stück je Bogen. `etikett_am` am Artikel merkt, was schon gedruckt ist —
+sichtbar für alle, nicht nur am druckenden Gerät. Vermerkt wird **nach** Bestätigung,
+weil die App nicht sieht, ob Papier herauskam.
 
-**Gescannt wird mit einem Handscanner am iPad**, nicht mit der Kamera. So ein Scanner
-meldet sich als Tastatur an. Deshalb:
-- globaler `keydown`-Empfang, kein Eingabefeld nötig
-- Tempoerkennung: über 90 ms Abstand zwischen Zeichen ist ein Mensch, kein Scanner
-- Eingabefelder ausser dem Codefeld sind vom Scan-Empfang ausgenommen
-- Doppellesungen innerhalb 1,2 s werden verworfen
-- Tonsignal bei Erfolg und Fehler, weil beim Scannen niemand aufs Display schaut
-
-**Bestellliste:** Was die Werkstatt meldet, landet nach Lieferant gruppiert beim Büro.
-Die Menge trägt das Büro ein. Bestand 0 meldet sich selbst.
-
-Bestände liegen in `localStorage` — nur im jeweiligen Browser, kein Gerätabgleich.
+**Zugänge · Rückmeldung · Neuigkeiten** — Neuigkeiten gehen nach einem Update einmal von
+selbst auf. Beim nächsten Update **nur** einen Block oben in `NEUERUNGEN` einfügen; die
+Versionsnummer in der Fusszeile zieht von selbst nach. Punkte mit `nur: ['admin']` sieht
+die Werkstatt nicht.
 
 ---
 
 ## Verworfene Ansätze — bitte nicht neu vorschlagen
 
-Ricardo hat diese Wege ausdrücklich abgelehnt:
-
 - **Mindest- und Sollbestand** im Artikelstamm. Zu viel Pflege. Stattdessen der
   Meldeknopf: was fehlt, sieht der Mann an der Maschine, nicht die Datenbank.
-- **Scanmodus vorab wählen** (Entnehmen/Einlagern/… als Kacheln oben). Erst scannen,
-  dann entscheiden.
-- **Getrennte Anmeldung Werkstatt/Büro** mit PIN-Feld fürs iPad. Ein Weg genügt.
-- **Leere Platzhalter-Kästen.** Was noch keinen Inhalt hat, wird gar nicht angezeigt —
-  die Artikelkarte erscheint erst nach dem Scan.
-
----
-
-## Artikelstamm
-
-Ein Artikel im Array `STAMM` (oben in `bestellung.html`):
-
-```js
-{ code:'LOT-0002',                    // Inhalt des QR-Etiketts, eindeutig
-  name:'Spanplattenschraube 4,0 × 60',
-  einheit:'Stk',
-  lieferant:'Opo Oeschger',
-  lnr:'21.943.60',                    // Artikelnummer beim Lieferanten
-  ort:'Regal A / Fach 2',
-  ist:320,                            // Bestand
-  schritt:100 }                       // Verpackungseinheit, füllt die Mengen-Schnelltasten
-```
-
-Die acht Artikel und die Lieferanten sind **Beispieldaten**.
+- **Scanmodus vorab wählen.** Erst scannen, dann entscheiden.
+- **Getrennte Anmeldung Werkstatt/Büro** mit PIN fürs iPad. Ein Weg genügt.
+- **Leere Platzhalter-Kästen.** Was keinen Inhalt hat, wird nicht angezeigt.
+- **Supabase** — pausiert nach sieben Tagen Ruhe.
+- **Avery-Bestellnummern erfinden.** „3474 gibt es nicht nur 3472 3473 3477 und so
+  weiter." Masse angeben, keine Nummern.
 
 ---
 
 ## Offene Punkte
 
-**Muss entschieden werden:**
-- Technologie-Stack. Davon hängt ab, ob Bestände zwischen iPad und PC abgeglichen werden.
-- Verhältnis zur bestehenden App **SchreiniBestell** (.NET 10, 11 Lieferanten, Scan am
-  iPhone → Bestellung am PC). Löst Lot sie ab, oder übernimmt Lot deren Artikelstamm und
-  Lieferanten? Am 27.08.2026 gefragt, noch offen.
-
-**Fehlt noch im Bereich Bestellung:**
-- Artikel anlegen und bearbeiten
-- QR-Etiketten drucken (ohne die geht in der Werkstatt gar nichts)
-- Echte Anmeldung mit Sitzungen
-- Bestellung tatsächlich an die Lieferanten schicken
-
-**Kleinigkeit:** „Letzte Buchungen" zeigt noch einen leeren Kasten, solange nichts gebucht
-wurde. Ricardo wurde gefragt, ob das auch erst mit der ersten Buchung erscheinen soll —
-noch keine Antwort.
+- **SchreiniBestell** (.NET 10, 11 Lieferanten, Scan am iPhone → Bestellung am PC):
+  löst Lot sie ab, oder übernimmt Lot deren Artikelstamm und Lieferanten? Am 27.08.2026
+  gefragt, noch offen.
+- Bestellung **tatsächlich an die Lieferanten schicken** — bisher nur die Liste.
+- **Artikel einlesen** aus der 41-seitigen Inventarliste, statt jeden von Hand.
+- Passwort selbst zurücksetzen (bisher: beim Administrator melden).
+- Kamera als Ersatzscanner, wenn der Handscanner fehlt.
+- Umzug auf Ricardos Windows Server 2022 wäre über Tailscale denkbar — Cloudflare läuft,
+  solange kein Grund dagegen spricht.
 
 ---
 
