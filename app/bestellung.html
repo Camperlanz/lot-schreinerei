@@ -599,14 +599,14 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
 
   <div class="foot">
     <span>Lot 0.1.1</span>
-    <span>Beispieldaten, Bestände nur lokal im Browser</span>
+    <span>Bestände nur lokal im Browser</span>
     <button class="b b-secondary b-sm" id="resetBtn" type="button">Bestände zurücksetzen</button>
   </div>
 </main>
 
 <script src="verbindung.js?v=4f9bd993"></script>
 <script src="neuerungen.js?v=f007d6bd"></script>
-<script src="stammdaten.js?v=8537a890"></script>
+<script src="stammdaten.js?v=46fd8898"></script>
 <script>
 (function () {
   "use strict";
@@ -615,7 +615,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
      Wer dort etwas anlegt, findet es hier sofort beim Scannen. */
   var STAMM = LotStamm.ladeArtikel();
 
-  var KEY = 'lot.lager.v5';
+  var KEY = 'lot.lager.v6';
   var root = document.documentElement;
 
   var bestand = {}, log = [];
@@ -954,7 +954,10 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   var aktuell = null;
   var menge = 1;
 
+  /* Ein paar Nummern zum Antippen, wenn gerade kein Scanner da ist.
+     Solange kein Artikel erfasst ist, steht hier nichts. */
   var demo = document.getElementById('demoCodes');
+  demo.hidden = STAMM.length === 0;
   STAMM.slice(0, 4).forEach(function (a) {
     var b = document.createElement('button');
     b.type = 'button'; b.className = 'demo-code';
@@ -1166,8 +1169,13 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
              .toLowerCase().indexOf(q) !== -1;
     });
     if (!liste.length) {
-      tb.innerHTML = '<tr><td colspan="6"><div class="empty">' +
-        '<b>Nichts gefunden</b><span>Andere Suche versuchen.</span></div></td></tr>';
+      /* Leeres Lager und erfolglose Suche sind zweierlei — wer noch keinen
+         Artikel erfasst hat, soll nicht lesen, er habe falsch gesucht. */
+      var text = STAMM.length
+        ? '<b>Nichts gefunden</b><span>Andere Suche versuchen.</span>'
+        : '<b>Noch keine Artikel</b><span>Unter „Artikel" anlegen — ' +
+          'danach stehen sie hier mit ihrem Bestand.</span>';
+      tb.innerHTML = '<tr><td colspan="6"><div class="empty">' + text + '</div></td></tr>';
       return;
     }
     liste.forEach(function (a) {
