@@ -24,6 +24,28 @@
   /* ---------- Was ist neu — Neuestes zuoberst ---------- */
   var NEUERUNGEN = [
     {
+      version: '0.1.3',
+      datum: '10.09.2026',
+      titel: 'Jeder sieht, was er braucht',
+      einleitung: 'Werkstatt und Büro haben jetzt klar getrennte Aufgaben in Lot.',
+      punkte: [
+        { text: 'Die Werkstatt scannt, bucht, meldet und nimmt Lieferungen an. ' +
+                '<b>Artikel, Lieferanten und Etiketten</b> sind jetzt beim Büro — ' +
+                'die Knöpfe dafür siehst du nicht mehr.', nur: ['werkstatt'] },
+        { text: 'Bestand und Lagerort findest du wie gewohnt unter <b>Lager</b>.',
+                nur: ['werkstatt'] },
+        { text: 'Fehlt ein Artikel oder ein Etikett? Schreib es unter ' +
+                '<b>Rückmeldung</b>.', nur: ['werkstatt'] },
+        { text: 'Als bestellt vermerken, Artikel, Lieferanten und Etiketten pflegen ' +
+                'kann nur noch das Büro — die Werkstatt kann dort nichts mehr ' +
+                'versehentlich löschen.', nur: ['buero', 'admin'] },
+        { text: 'Die Werkstatt nimmt Lieferungen weiterhin selbst an und kann ' +
+                'ihre eigenen Meldungen streichen.', nur: ['buero', 'admin'] },
+        { text: 'Geprüft wird am Server, nicht nur in der Anzeige — auch wer die ' +
+                'Adresse von Hand eintippt, kommt nicht weiter.', nur: ['admin'] }
+      ]
+    },
+    {
       version: '0.1.2',
       datum: '09.09.2026',
       titel: 'Ein Lager für alle Geräte',

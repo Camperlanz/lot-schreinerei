@@ -2,7 +2,7 @@
 
 Diese Datei ist die Übergabe. Wer hier neu einsteigt (Mensch oder KI), liest sie zuerst.
 
-**Stand: 09.09.2026 · Version 0.1.2 · läuft online**
+**Stand: 10.09.2026 · Version 0.1.3 lokal fertig · online läuft 0.1.2**
 
 ---
 
@@ -128,7 +128,11 @@ um (`wannAus`, `zeitAus` in `bestellung.html`).
 |---|---|
 | `admin` | alles, auch Zugänge anlegen und Rollen vergeben |
 | `buero` | Betrieb führen: bestellen, Artikel und Lieferanten pflegen, Rückmeldungen |
-| `werkstatt` | scannen, buchen, melden; sieht die eigenen Rückmeldungen |
+| `werkstatt` | scannen, buchen, melden, Ware annehmen; sieht die eigenen Rückmeldungen |
+
+Artikel, Lieferanten, Bestellt-Vermerk und Etiketten verlangen `fuehrtBetrieb` am Server.
+In den Seiten blendet `data-nur="betrieb"` die zugehörigen Knöpfe aus; ruft die Werkstatt
+eine Büro-Seite direkt auf, kommt ein Hinweis statt Formularen.
 
 Zwei Sperren: der letzte Administrator kann sich weder degradieren noch löschen. Ein
 zurückgesetztes Passwort beendet alle Sitzungen dieses Zugangs. **Alles serverseitig

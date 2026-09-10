@@ -235,8 +235,8 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
 <header class="topbar">
   <div class="brand"><b>LO<span>T</span></b><em>Artikel</em></div>
   <a class="ghost" href="bestellung.html">Zurück zur Bestellung</a>
-  <a class="ghost" href="lieferanten.html">Lieferanten</a>
-  <a class="ghost" href="etiketten.html">Etiketten</a>
+  <a class="ghost" href="lieferanten.html" data-nur="betrieb" hidden>Lieferanten</a>
+  <a class="ghost" href="etiketten.html" data-nur="betrieb" hidden>Etiketten</a>
   <a class="ghost" href="rueckmeldung.html">Rückmeldung</a>
   <a class="ghost" id="zugaengeKnopf" href="zugaenge.html" hidden>Zugänge</a>
   <button class="ghost" id="themeBtn" type="button">
@@ -327,8 +327,8 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   </div>
 </main>
 
-<script src="verbindung.js?v=e178409b"></script>
-<script src="neuerungen.js?v=5db7944e"></script>
+<script src="verbindung.js?v=d86c732c"></script>
+<script src="neuerungen.js?v=5f90c3f0"></script>
 <script src="stammdaten.js?v=67552d6e"></script>
 <script>
 (function () {
@@ -608,6 +608,17 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
 
   /* ---------- Start: Stand aus der Datenbank holen ---------- */
   (async function () {
+    /* Die Werkstatt hat hier nichts zu ändern — der Server lehnt es ab.
+       Statt Knöpfen, die nachher "darfst du nicht" sagen, gleich ein Hinweis. */
+    if (LotVerbindung.angemeldet() && !LotVerbindung.fuehrtBetrieb()) {
+      document.querySelector('main').innerHTML =
+        '<div class="panel"><div class="empty">' +
+          '<b>Artikel pflegt das Büro</b>' +
+          '<span>Anlegen, ändern und löschen gehört zum Büro. Bestand und Lagerort siehst du unter Bestellung → Lager.</span>' +
+          '<span><a href="bestellung.html">Zurück zur Bestellung</a></span>' +
+        '</div></div>';
+      return;
+    }
     try {
       await LotStamm.start();
       uebernimm();

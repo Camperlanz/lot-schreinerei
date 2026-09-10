@@ -370,7 +370,7 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
 <header class="topbar">
   <div class="brand"><b>LO<span>T</span></b><em>Etiketten</em></div>
   <a class="ghost" href="bestellung.html">Zurück zur Bestellung</a>
-  <a class="ghost" href="artikel.html">Artikel</a>
+  <a class="ghost" href="artikel.html" data-nur="betrieb" hidden>Artikel</a>
   <a class="ghost" href="rueckmeldung.html">Rückmeldung</a>
   <a class="ghost" id="zugaengeKnopf" href="zugaenge.html" hidden>Zugänge</a>
   <button class="ghost" id="themeBtn" type="button">
@@ -512,8 +512,8 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
   <div class="bogen-huelle" id="bogenHuelle"></div>
 </main>
 
-<script src="verbindung.js?v=e178409b"></script>
-<script src="neuerungen.js?v=5db7944e"></script>
+<script src="verbindung.js?v=d86c732c"></script>
+<script src="neuerungen.js?v=5f90c3f0"></script>
 <script src="stammdaten.js?v=67552d6e"></script>
 <script src="qr.js?v=6f25b66a"></script>
 <script>
@@ -1148,6 +1148,17 @@ input[type="checkbox"]{width:20px; height:20px; accent-color:var(--brand); curso
   syncEigenes();
   renderRaster();
   (async function () {
+    /* Die Werkstatt hat hier nichts zu ändern — der Server lehnt es ab.
+       Statt Knöpfen, die nachher "darfst du nicht" sagen, gleich ein Hinweis. */
+    if (LotVerbindung.angemeldet() && !LotVerbindung.fuehrtBetrieb()) {
+      document.querySelector('main').innerHTML =
+        '<div class="panel"><div class="empty">' +
+          '<b>Etiketten druckt das Büro</b>' +
+          '<span>Fehlt irgendwo ein Etikett oder ist eins unleserlich, melde es unter Rückmeldung — dann wird es nachgedruckt.</span>' +
+          '<span><a href="bestellung.html">Zurück zur Bestellung</a></span>' +
+        '</div></div>';
+      return;
+    }
     try {
       await LotStamm.start();
       uebernimm();

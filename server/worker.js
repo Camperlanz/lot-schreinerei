@@ -76,7 +76,9 @@ function gleich(a, b) {
    admin      darf alles, auch Zugaenge anlegen und Rollen vergeben
    buero      fuehrt den Betrieb: bestellen, Artikel und Lieferanten pflegen,
               Rueckmeldungen bearbeiten - aber keine Zugaenge verwalten
-   werkstatt  bucht, meldet, sieht die eigenen Rueckmeldungen             */
+   werkstatt  bucht (auch Wareneingang), meldet, streicht eigene Meldungen,
+              sieht die eigenen Rueckmeldungen. Artikel, Lieferanten,
+              Bestellt-Vermerk und Etiketten gehoeren dem Buero.            */
 var ROLLEN = ['admin', 'buero', 'werkstatt'];
 
 function istAdmin(ich)      { return ich.rolle === 'admin'; }
@@ -427,6 +429,7 @@ export default {
 
       /* ---------- Büro: Bestellung ist raus ---------- */
       if (pfad === '/api/bestellt' && anfrage.method === 'POST') {
+        if (!fuehrtBetrieb(ich)) return nein('Als bestellt vermerkt das Büro.', 403);
         const { codes, zurueck } = await anfrage.json();
         if (!Array.isArray(codes) || !codes.length) return nein('Keine Position übergeben.', 400);
         const schritte = [];
@@ -453,6 +456,7 @@ export default {
 
       /* ---------- Artikel ---------- */
       if (pfad === '/api/artikel' && anfrage.method === 'POST') {
+        if (!fuehrtBetrieb(ich)) return nein('Artikel pflegt das Büro.', 403);
         const { code, alt, name, einheit, lieferant, ort, bestand } = await anfrage.json();
         if (!code || !name) return nein('Artikelnummer und Bezeichnung sind nötig.', 400);
 
@@ -485,6 +489,7 @@ export default {
       }
 
       if (pfad === '/api/artikel/weg' && anfrage.method === 'POST') {
+        if (!fuehrtBetrieb(ich)) return nein('Artikel löscht das Büro.', 403);
         const { code } = await anfrage.json();
         await db.prepare('DELETE FROM artikel WHERE code = ?').bind(code).run();
         return raus(await standHolen(db));
@@ -492,6 +497,7 @@ export default {
 
       /* ---------- Lieferanten ---------- */
       if (pfad === '/api/lieferant' && anfrage.method === 'POST') {
+        if (!fuehrtBetrieb(ich)) return nein('Lieferanten pflegt das Büro.', 403);
         const d = await anfrage.json();
         if (!d.name) return nein('Name ist nötig.', 400);
         const id = d.id || zufallHex(8);
@@ -508,6 +514,7 @@ export default {
       }
 
       if (pfad === '/api/lieferant/weg' && anfrage.method === 'POST') {
+        if (!fuehrtBetrieb(ich)) return nein('Lieferanten löscht das Büro.', 403);
         const { id } = await anfrage.json();
         await db.prepare('DELETE FROM lieferanten WHERE id = ?').bind(id).run();
         return raus(await standHolen(db));
@@ -515,6 +522,7 @@ export default {
 
       /* ---------- Etikettenstand ---------- */
       if (pfad === '/api/etikett' && anfrage.method === 'POST') {
+        if (!fuehrtBetrieb(ich)) return nein('Etiketten vermerkt das Büro.', 403);
         const { codes, aufheben } = await anfrage.json();
         if (!Array.isArray(codes) || !codes.length) return nein('Keine Artikel übergeben.', 400);
         const heute = new Date().toISOString().slice(0, 10);

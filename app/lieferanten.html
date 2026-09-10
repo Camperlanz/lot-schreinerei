@@ -241,8 +241,8 @@ input:focus,textarea:focus{background:var(--bg-surface)}
 <header class="topbar">
   <div class="brand"><b>LO<span>T</span></b><em>Lieferanten</em></div>
   <a class="ghost" href="bestellung.html">Zurück zur Bestellung</a>
-  <a class="ghost" href="artikel.html">Artikel</a>
-  <a class="ghost" href="etiketten.html">Etiketten</a>
+  <a class="ghost" href="artikel.html" data-nur="betrieb" hidden>Artikel</a>
+  <a class="ghost" href="etiketten.html" data-nur="betrieb" hidden>Etiketten</a>
   <a class="ghost" href="rueckmeldung.html">Rückmeldung</a>
   <a class="ghost" id="zugaengeKnopf" href="zugaenge.html" hidden>Zugänge</a>
   <button class="ghost" id="themeBtn" type="button">
@@ -323,8 +323,8 @@ input:focus,textarea:focus{background:var(--bg-surface)}
   </div>
 </main>
 
-<script src="verbindung.js?v=e178409b"></script>
-<script src="neuerungen.js?v=5db7944e"></script>
+<script src="verbindung.js?v=d86c732c"></script>
+<script src="neuerungen.js?v=5f90c3f0"></script>
 <script src="stammdaten.js?v=67552d6e"></script>
 <script>
 (function () {
@@ -581,6 +581,17 @@ input:focus,textarea:focus{background:var(--bg-surface)}
 
   /* ---------- Start: Stand aus der Datenbank holen ---------- */
   (async function () {
+    /* Die Werkstatt hat hier nichts zu ändern — der Server lehnt es ab.
+       Statt Knöpfen, die nachher "darfst du nicht" sagen, gleich ein Hinweis. */
+    if (LotVerbindung.angemeldet() && !LotVerbindung.fuehrtBetrieb()) {
+      document.querySelector('main').innerHTML =
+        '<div class="panel"><div class="empty">' +
+          '<b>Lieferanten pflegt das Büro</b>' +
+          '<span>Wer bei wem bestellt wird, legt das Büro fest. Fehlt ein Lieferant, schreib es unter Rückmeldung.</span>' +
+          '<span><a href="bestellung.html">Zurück zur Bestellung</a></span>' +
+        '</div></div>';
+      return;
+    }
     try {
       await LotStamm.start();
       uebernimm();

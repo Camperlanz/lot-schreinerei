@@ -217,10 +217,23 @@
   /* Den Zugaenge-Knopf gibt es nur fuer Administratoren. Der Server
      weist Fremde ohnehin ab - das hier haelt die Leiste nur aufgeraeumt. */
   function zeigeAdminKnopf() {
-    var k = global.document && global.document.getElementById('zugaengeKnopf');
-    if (!k) return;
+    var d = global.document;
+    if (!d) return;
     var wer = ich();
-    k.hidden = !(wer && wer.rolle === 'admin');
+    var k = d.getElementById('zugaengeKnopf');
+    if (k) k.hidden = !(wer && wer.rolle === 'admin');
+    /* Was dem Büro gehört (Artikel, Lieferanten, Etiketten), sieht die
+       Werkstatt gar nicht erst. Der Server prüft es ohnehin — das hier
+       erspart nur den Knopf, der nachher "darfst du nicht" sagt. */
+    var betrieb = fuehrtBetrieb();
+    var nur = d.querySelectorAll('[data-nur="betrieb"]');
+    for (var i = 0; i < nur.length; i++) nur[i].hidden = !betrieb;
+  }
+
+  /* Büro und Administrator führen den Betrieb */
+  function fuehrtBetrieb() {
+    var wer = ich();
+    return !!wer && (wer.rolle === 'admin' || wer.rolle === 'buero');
   }
   /* Fusszeile: verbunden, ohne Netz, oder wie viele Buchungen warten.
      Steht auf jeder Seite an derselben Stelle, damit man beim Blick
@@ -263,6 +276,7 @@
     abmelden: abmelden,
     angemeldet: angemeldet,
     ich: ich,
+    fuehrtBetrieb: fuehrtBetrieb,
     stand: stand,
     buchen: buchen,
     nachreichen: nachreichen,

@@ -466,11 +466,11 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
 <header class="topbar">
   <div class="brand"><b>LO<span>T</span></b><em>Bestellung</em></div>
   <div class="who"><i aria-hidden="true">RS</i><span>Ricardo</span></div>
-  <a class="ghost" href="artikel.html">Artikel</a>
-  <a class="ghost" href="etiketten.html">Etiketten</a>
+  <a class="ghost" href="artikel.html" data-nur="betrieb" hidden>Artikel</a>
+  <a class="ghost" href="etiketten.html" data-nur="betrieb" hidden>Etiketten</a>
   <a class="ghost" href="rueckmeldung.html">Rückmeldung</a>
   <a class="ghost" id="zugaengeKnopf" href="zugaenge.html" hidden>Zugänge</a>
-  <a class="ghost" href="lieferanten.html">Lieferanten</a>
+  <a class="ghost" href="lieferanten.html" data-nur="betrieb" hidden>Lieferanten</a>
   <button class="ghost" id="soundBtn" type="button" aria-pressed="true">
     <span class="dot" aria-hidden="true"></span><span id="soundLabel">Ton an</span>
   </button>
@@ -593,7 +593,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
         <b id="sumTitle">0 Positionen</b>
         <span id="sumSub">bei 0 Lieferanten</span>
       </div>
-      <button class="b b-primary" id="makeList" type="button">Bestellliste erzeugen</button>
+      <button class="b b-primary" id="makeList" type="button" data-nur="betrieb" hidden>Bestellliste erzeugen</button>
     </div>
   </section>
 
@@ -604,8 +604,8 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
   </div>
 </main>
 
-<script src="verbindung.js?v=e178409b"></script>
-<script src="neuerungen.js?v=5db7944e"></script>
+<script src="verbindung.js?v=d86c732c"></script>
+<script src="neuerungen.js?v=5f90c3f0"></script>
 <script src="stammdaten.js?v=67552d6e"></script>
 <script>
 (function () {
@@ -1300,7 +1300,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
       head.className = 'sup-head';
       head.innerHTML = '<h4>' + esc(lief) + '</h4>' +
         '<span class="cnt">' + gruppe.length + (gruppe.length === 1 ? ' Position' : ' Positionen') + '</span>' +
-        (bestellt
+        (bestellt || !LotVerbindung.fuehrtBetrieb()
           ? ''
           : '<button class="b b-secondary b-sm" data-act="alle" data-lief="' + esc(lief) + '">' +
             (gruppe.length === 1 ? 'Als bestellt' : 'Alle ' + gruppe.length + ' als bestellt') +
@@ -1309,6 +1309,7 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
 
       var body = document.createElement('div');
       body.className = 'sup-body';
+      var betrieb = LotVerbindung.fuehrtBetrieb();
       gruppe.forEach(function (a) {
         var e = offen[a.code];
         var line = document.createElement('div');
@@ -1330,10 +1331,12 @@ td .sub{display:block; font:400 12px/1.4 var(--f-mono); color:var(--text-faint)}
             '<span>' + esc(a.einheit) + '</span>' +
           '</div>' +
           '<div class="cellbtns">' +
+            /* Werkstatt: Ware annehmen und eigene Meldung streichen.
+               Bestellen und Bestellung zurücknehmen macht das Büro. */
             (bestellt
               ? '<button class="b b-primary b-sm" data-act="erhalten" data-code="' + esc(a.code) + '">Erhalten</button>' +
-                '<button class="b b-secondary b-sm" data-act="zurueck" data-code="' + esc(a.code) + '">Doch nicht</button>'
-              : '<button class="b b-primary b-sm" data-act="bestellt" data-code="' + esc(a.code) + '">Bestellt</button>' +
+                (betrieb ? '<button class="b b-secondary b-sm" data-act="zurueck" data-code="' + esc(a.code) + '">Doch nicht</button>' : '')
+              : (betrieb ? '<button class="b b-primary b-sm" data-act="bestellt" data-code="' + esc(a.code) + '">Bestellt</button>' : '') +
                 '<button class="b b-secondary b-sm" data-act="weg" data-code="' + esc(a.code) + '">Streichen</button>') +
           '</div>';
         body.appendChild(line);
