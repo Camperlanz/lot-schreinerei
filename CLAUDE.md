@@ -2,7 +2,7 @@
 
 Diese Datei ist die Übergabe. Wer hier neu einsteigt (Mensch oder KI), liest sie zuerst.
 
-**Stand: 10.09.2026 · Version 0.1.3 lokal fertig · online läuft 0.1.2**
+**Stand: 10.09.2026 · Version 0.1.3 · läuft online**
 
 ---
 
